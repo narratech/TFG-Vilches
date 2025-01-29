@@ -19,7 +19,7 @@ public class SnakeControl : MonoBehaviour
     {
         public Vector3 direccion;
         public GameObject parte;
-        public BodyPart(Vector2 dir, GameObject part)
+        public BodyPart(Vector3 dir, GameObject part)
         {
             parte = part;
             direccion = dir;
@@ -32,7 +32,6 @@ public class SnakeControl : MonoBehaviour
 
     protected float elapsedTime;
     protected bool growthNeeded;
-    protected bool growing;
     protected Vector2 headNode;
 
     [SerializeField]
@@ -73,7 +72,6 @@ public class SnakeControl : MonoBehaviour
             }
         }
         growthNeeded = false;
-        growing = false;
     }
 
     // Update is called once per frame
@@ -100,16 +98,6 @@ public class SnakeControl : MonoBehaviour
         return 10 + Mathf.RoundToInt(xPos); // La y total mide 8 nodos empezando en 4
     }
 
-
-    //protected void OnCollisionEnter(Collision collision)
-    //{
-    //    if (collision.collider.isTrigger && collision.collider.gameObject.tag == "Fruit")
-    //    {
-    //        growthNeeded = true;
-    //        Destroy(collision.collider.gameObject);
-    //    }
-    //}
-
     /// <summary>
     /// Se encarga de mover cada parte del cuerpo de la serpiente segun pasa por los nodos y, si necesita cambiar la direccion,
     /// la cambia
@@ -126,16 +114,21 @@ public class SnakeControl : MonoBehaviour
 
             headPart.direccion = myNodos[nodeX, nodeY].direccion;
             myDirection = headPart.direccion;
-            // Movimiento discreto mejor, por nodos, no continuo con delta.
-            headPart.parte.transform.position = myNodos[nodeX + Mathf.RoundToInt(headPart.direccion.x), nodeY - Mathf.RoundToInt(headPart.direccion.z)].centro;
+            
         }
-        else
-        {
-            headPart.parte.transform.position = myNodos[nodeX + Mathf.RoundToInt(headPart.direccion.x), nodeY - Mathf.RoundToInt(headPart.direccion.z)].centro;
-        }
-        nodeX = 16 + Mathf.RoundToInt(headPart.parte.transform.position.x); // Para que no se cambie la direccion hasta haber alcanzado el nodo
+        // Movimiento discreto mejor, por nodos, no continuo con delta.
+        headPart.parte.transform.position = myNodos[nodeX + Mathf.RoundToInt(headPart.direccion.x), nodeY - Mathf.RoundToInt(headPart.direccion.z)].centro;
+        GameManager.Instance.occupieNode(nodeX + Mathf.RoundToInt(headPart.direccion.x), nodeY - Mathf.RoundToInt(headPart.direccion.z));
+
+        nodeX = 16 + Mathf.RoundToInt(headPart.parte.transform.position.x); // Para comprobar si hay fruta o serpiente
         nodeY = 9 - Mathf.RoundToInt(headPart.parte.transform.position.z);
-        Debug.Log(nodeX + ", " + nodeY);
+        // Te comes la serpiente
+        if (GameManager.Instance.isThereFruit(nodeX, nodeY))
+        {
+            growthNeeded = true;
+            GameManager.Instance.eatFruit(nodeX, nodeY);
+        }
+
         for (int i = 0; i < bodyParts.Count; i++)
         {
             nodeX = 16 + Mathf.RoundToInt(bodyParts[i].parte.transform.position.x);
@@ -150,12 +143,10 @@ public class SnakeControl : MonoBehaviour
 
                 myPart.direccion = myNodos[nodeX, nodeY].direccion; // Se guarda la direccion a seguir
 
-                myPart.parte.transform.position = myNodos[nodeX + Mathf.RoundToInt(myPart.direccion.x), nodeY - Mathf.RoundToInt(myPart.direccion.z)].centro; // Puede que el cuerpo este tomando un giro
+    
             }
-            else
-            {
-                myPart.parte.transform.position = myNodos[nodeX + Mathf.RoundToInt(myPart.direccion.x), nodeY - Mathf.RoundToInt(myPart.direccion.z)].centro;
-            }
+            myPart.parte.transform.position = myNodos[nodeX + Mathf.RoundToInt(myPart.direccion.x), nodeY - Mathf.RoundToInt(myPart.direccion.z)].centro;
+            GameManager.Instance.occupieNode(nodeX + Mathf.RoundToInt(myPart.direccion.x), nodeY - Mathf.RoundToInt(myPart.direccion.z));
             bodyParts[i] = myPart;
         }
         nodeX = 16 + Mathf.RoundToInt(tailPart.parte.transform.position.x);
@@ -169,16 +160,15 @@ public class SnakeControl : MonoBehaviour
 
                 tailPart.direccion = myNodos[nodeX, nodeY].direccion; // La cola tiene la direccion
                 tailPart.parte.transform.Rotate(Vector3.up, myNodos[nodeX, nodeY].rotationNeeded);
-
-                tailPart.parte.transform.position = myNodos[nodeX + Mathf.RoundToInt(tailPart.direccion.x), nodeY - Mathf.RoundToInt(tailPart.direccion.z)].centro;
                 
                 myNodos[nodeX, nodeY].direccion = new Vector3(0, 0, 0); // Si pasa la cola, se reinicia el nodo para otro giro
                 myNodos[nodeX, nodeY].rotationNeeded = 0;
             }
-            else
-            {
-                tailPart.parte.transform.position = myNodos[nodeX + Mathf.RoundToInt(tailPart.direccion.x), nodeY - Mathf.RoundToInt(tailPart.direccion.z)].centro;
-            }
+
+            tailPart.parte.transform.position = myNodos[nodeX + Mathf.RoundToInt(tailPart.direccion.x), nodeY - Mathf.RoundToInt(tailPart.direccion.z)].centro;
+            GameManager.Instance.occupieNode(nodeX + Mathf.RoundToInt(tailPart.direccion.x), nodeY - Mathf.RoundToInt(tailPart.direccion.z));
+            GameManager.Instance.deOccupieNode(nodeX, nodeY); // Si la cola pasa, hay que desocupar el nodo, no queda más serpiente.
+
         }
         else growSomething();
 
@@ -186,35 +176,13 @@ public class SnakeControl : MonoBehaviour
 
     protected void growSomething()
     {
-        int nodeX = 16 + (int)tailPart.parte.transform.position.x;
-        int nodeY = 9 + (int)tailPart.parte.transform.position.z;
-        tailPart.parte.transform.position = myNodos[nodeX, nodeY].centro; //Para que la cola no se descoloque.
-        if (!growing)
-        {
-            int headNodeX = 16 + (int)headPart.parte.transform.position.x;
-            int headNodeY = 9 + (int)headPart.parte.transform.position.z;
-            growing = true;
-            headNode = new Vector2(headNodeX, headNodeY);
-        }
-        else
-        {
-            int headNodeX = 16 + (int)headPart.parte.transform.position.x;
-            int headNodeY = 9 + (int)headPart.parte.transform.position.z;
-            Vector2 newHeadPosition = new Vector2(headNodeX, headNodeY);
-            // Si la cabeza ha cambiado de nodo desde la ultima vez, es que debe haber alcanzado uno nuevo
-            // por lo que hay espacio para el nuevo cuerpo.
-            if (newHeadPosition != headNode)
-            {
-                int previusNodeX = 16 + (int)bodyParts[bodyParts.Count - 1].parte.transform.position.x -
-                   Mathf.RoundToInt(bodyParts[bodyParts.Count - 1].direccion.x);
-                int previusNodeY = 9 + (int)bodyParts[bodyParts.Count - 1].parte.transform.position.z -
-                   Mathf.RoundToInt(bodyParts[bodyParts.Count - 1].direccion.z);
-                GameObject newBodyPart = Instantiate(bodyPartObj, myNodos[previusNodeX, previusNodeY].centro, bodyParts[bodyParts.Count - 1].parte.transform.rotation);
-                bodyParts.Add(new BodyPart(bodyParts[bodyParts.Count - 1].direccion, newBodyPart));
-                growing = false;
-                growthNeeded = false;
-            }
-        }
-
+        int previusNodeX = 16 + Mathf.RoundToInt(bodyParts[bodyParts.Count - 1].parte.transform.position.x -
+           Mathf.RoundToInt(bodyParts[bodyParts.Count - 1].direccion.x));
+        int previusNodeY = 9 - Mathf.RoundToInt(bodyParts[bodyParts.Count - 1].parte.transform.position.z -
+           Mathf.RoundToInt(bodyParts[bodyParts.Count - 1].direccion.z));
+        GameObject newBodyPart = Instantiate(bodyPartObj, myNodos[previusNodeX, previusNodeY].centro, bodyParts[bodyParts.Count - 1].parte.transform.rotation);
+        Vector3 dir = bodyParts[bodyParts.Count - 1].direccion;
+        bodyParts.Add(new BodyPart(dir, newBodyPart));
+        growthNeeded = false;
     }
 }
