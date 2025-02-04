@@ -48,6 +48,7 @@ public class SnakeControl : MonoBehaviour
     protected GameObject tailPartObj;
     [SerializeField]
     protected float speed;
+    protected bool keepPlaying;
 
 
 
@@ -59,19 +60,20 @@ public class SnakeControl : MonoBehaviour
         headPart = new BodyPart(new Vector3(playerOne ? 1 : -1, 0, 0), headPartObj);
         tailPart = new BodyPart(new Vector3(playerOne ? 1 : -1, 0, 0), tailPartObj);
         bodyParts.Add(new BodyPart(new Vector3(playerOne ? 1 : -1, 0, 0), bodyPartObj));
-        // La x total mide 26 nodos, empezando en -16 <-> 11
-        // La y total mide 19 nodos empezando en 9 <-> -9
-        myNodos = new Nodo[28, 19];
-        for (int i = -16; i < 12; i++)
+        // La x total mide 26 nodos, empezando en -16 <-> 11 /-17 y 12 son limites
+        // La y total mide 19 nodos empezando en 8 <-> -8 / 9 y -9 son limites
+        myNodos = new Nodo[30, 19];
+        for (int i = -17; i < 13; i++)
         {
             for (int j = -9; j > -28; j--)
             {
-                int nodeX = 16 + i;
+                int nodeX = 17 + i;
                 int nodeY = -9 - j;
                 myNodos[nodeX, nodeY] = new Nodo(new Vector3(i, 0, 18 + j), new Vector3(0, 0, 0));
             }
         }
         growthNeeded = false;
+        keepPlaying = true;
     }
 
     // Update is called once per frame
@@ -97,6 +99,10 @@ public class SnakeControl : MonoBehaviour
     {
         return 10 + Mathf.RoundToInt(xPos); // La y total mide 8 nodos empezando en 4
     }
+    public void setKeepPlaying(bool keepPlay)
+    {
+        keepPlaying = keepPlay;
+    }
 
     /// <summary>
     /// Se encarga de mover cada parte del cuerpo de la serpiente segun pasa por los nodos y, si necesita cambiar la direccion,
@@ -118,59 +124,68 @@ public class SnakeControl : MonoBehaviour
         }
         // Movimiento discreto mejor, por nodos, no continuo con delta.
         headPart.parte.transform.position = myNodos[nodeX + Mathf.RoundToInt(headPart.direccion.x), nodeY - Mathf.RoundToInt(headPart.direccion.z)].centro;
-        GameManager.Instance.occupieNode(nodeX + Mathf.RoundToInt(headPart.direccion.x), nodeY - Mathf.RoundToInt(headPart.direccion.z));
 
-        nodeX = 16 + Mathf.RoundToInt(headPart.parte.transform.position.x); // Para comprobar si hay fruta o serpiente
-        nodeY = 9 - Mathf.RoundToInt(headPart.parte.transform.position.z);
-        // Te comes la serpiente
-        if (GameManager.Instance.isThereFruit(nodeX, nodeY))
+        if (headPart.parte.transform.position.x < -17 || headPart.parte.transform.position.x > 12 ||
+            headPart.parte.transform.position.y < -9 || headPart.parte.transform.position.y > 9) // Si has perdido
         {
-            growthNeeded = true;
-            GameManager.Instance.eatFruit(nodeX, nodeY);
+            GameManager.Instance.lostGame(playerOne);
         }
-
-        for (int i = 0; i < bodyParts.Count; i++)
+        else
         {
-            nodeX = 16 + Mathf.RoundToInt(bodyParts[i].parte.transform.position.x);
-            nodeY = 9 - Mathf.RoundToInt(bodyParts[i].parte.transform.position.z);
-            BodyPart myPart = bodyParts[i];
+            GameManager.Instance.occupieNode(nodeX + Mathf.RoundToInt(headPart.direccion.x), nodeY - Mathf.RoundToInt(headPart.direccion.z));
 
-            if (myNodos[nodeX, nodeY].direccion != new Vector3(0, 0, 0) && myNodos[nodeX, nodeY].direccion != myPart.direccion)
+            nodeX = 16 + Mathf.RoundToInt(headPart.parte.transform.position.x); // Para comprobar si hay fruta o serpiente
+            nodeY = 9 - Mathf.RoundToInt(headPart.parte.transform.position.z);
+            // Te comes la serpiente
+            if (GameManager.Instance.isThereFruit(nodeX, nodeY))
             {
-
-                myPart.parte.transform.Rotate(Vector3.up, myNodos[nodeX, nodeY].rotationNeeded);
-
-
-                myPart.direccion = myNodos[nodeX, nodeY].direccion; // Se guarda la direccion a seguir
-
-    
-            }
-            myPart.parte.transform.position = myNodos[nodeX + Mathf.RoundToInt(myPart.direccion.x), nodeY - Mathf.RoundToInt(myPart.direccion.z)].centro;
-            GameManager.Instance.occupieNode(nodeX + Mathf.RoundToInt(myPart.direccion.x), nodeY - Mathf.RoundToInt(myPart.direccion.z));
-            bodyParts[i] = myPart;
-        }
-        nodeX = 16 + Mathf.RoundToInt(tailPart.parte.transform.position.x);
-        nodeY = 9 - Mathf.RoundToInt(tailPart.parte.transform.position.z);
-        // Para que nop gire sin parar en el mismo nodo
-        if (!growthNeeded)
-        {
-            if (myNodos[nodeX, nodeY].direccion != new Vector3(0, 0, 0) && myNodos[nodeX, nodeY].direccion != tailPart.direccion)
-            {
-                // Falta rotar las cosas
-
-                tailPart.direccion = myNodos[nodeX, nodeY].direccion; // La cola tiene la direccion
-                tailPart.parte.transform.Rotate(Vector3.up, myNodos[nodeX, nodeY].rotationNeeded);
-                
-                myNodos[nodeX, nodeY].direccion = new Vector3(0, 0, 0); // Si pasa la cola, se reinicia el nodo para otro giro
-                myNodos[nodeX, nodeY].rotationNeeded = 0;
+                growthNeeded = true;
+                GameManager.Instance.eatFruit(nodeX, nodeY);
             }
 
-            tailPart.parte.transform.position = myNodos[nodeX + Mathf.RoundToInt(tailPart.direccion.x), nodeY - Mathf.RoundToInt(tailPart.direccion.z)].centro;
-            GameManager.Instance.occupieNode(nodeX + Mathf.RoundToInt(tailPart.direccion.x), nodeY - Mathf.RoundToInt(tailPart.direccion.z));
-            GameManager.Instance.deOccupieNode(nodeX, nodeY); // Si la cola pasa, hay que desocupar el nodo, no queda más serpiente.
+            for (int i = 0; i < bodyParts.Count; i++)
+            {
+                nodeX = 16 + Mathf.RoundToInt(bodyParts[i].parte.transform.position.x);
+                nodeY = 9 - Mathf.RoundToInt(bodyParts[i].parte.transform.position.z);
+                BodyPart myPart = bodyParts[i];
 
+                if (myNodos[nodeX, nodeY].direccion != new Vector3(0, 0, 0) && myNodos[nodeX, nodeY].direccion != myPart.direccion)
+                {
+
+                    myPart.parte.transform.Rotate(Vector3.up, myNodos[nodeX, nodeY].rotationNeeded);
+
+
+                    myPart.direccion = myNodos[nodeX, nodeY].direccion; // Se guarda la direccion a seguir
+
+
+                }
+                myPart.parte.transform.position = myNodos[nodeX + Mathf.RoundToInt(myPart.direccion.x), nodeY - Mathf.RoundToInt(myPart.direccion.z)].centro;
+                GameManager.Instance.occupieNode(nodeX + Mathf.RoundToInt(myPart.direccion.x), nodeY - Mathf.RoundToInt(myPart.direccion.z));
+                bodyParts[i] = myPart;
+            }
+            nodeX = 16 + Mathf.RoundToInt(tailPart.parte.transform.position.x);
+            nodeY = 9 - Mathf.RoundToInt(tailPart.parte.transform.position.z);
+            // Para que nop gire sin parar en el mismo nodo
+            if (!growthNeeded)
+            {
+                if (myNodos[nodeX, nodeY].direccion != new Vector3(0, 0, 0) && myNodos[nodeX, nodeY].direccion != tailPart.direccion)
+                {
+                    // Falta rotar las cosas
+
+                    tailPart.direccion = myNodos[nodeX, nodeY].direccion; // La cola tiene la direccion
+                    tailPart.parte.transform.Rotate(Vector3.up, myNodos[nodeX, nodeY].rotationNeeded);
+
+                    myNodos[nodeX, nodeY].direccion = new Vector3(0, 0, 0); // Si pasa la cola, se reinicia el nodo para otro giro
+                    myNodos[nodeX, nodeY].rotationNeeded = 0;
+                }
+
+                tailPart.parte.transform.position = myNodos[nodeX + Mathf.RoundToInt(tailPart.direccion.x), nodeY - Mathf.RoundToInt(tailPart.direccion.z)].centro;
+                GameManager.Instance.occupieNode(nodeX + Mathf.RoundToInt(tailPart.direccion.x), nodeY - Mathf.RoundToInt(tailPart.direccion.z));
+                GameManager.Instance.deOccupieNode(nodeX, nodeY); // Si la cola pasa, hay que desocupar el nodo, no queda más serpiente.
+
+            }
+            else growSomething();
         }
-        else growSomething();
 
     }
 

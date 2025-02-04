@@ -14,12 +14,15 @@ public class ManualSnakeControl : SnakeControl
     // Update is called once per frame
     protected override void Update()
     {
-        base.Update();
-        HandleInput();
-        if (elapsedTime > 1 / speed)
+        if (keepPlaying)
         {
-            Move();
-            elapsedTime = 0;
+            base.Update();
+            HandleInput();
+            if (elapsedTime > 1 / speed)
+            {
+                Move();
+                elapsedTime = 0;
+            }
         }
     }
 

@@ -23,8 +23,15 @@ public class GameManager : MonoBehaviour
 
     [SerializeField]
     private GameObject fruit;
+    [SerializeField]
+    private GameObject player1;
+    [SerializeField]
+    private GameObject player2;
+    [SerializeField]
+    private GameObject GuiManager;
 
     private GameObject instantiatedFruit;
+    public bool lose;
 
     private void Awake()
     {
@@ -51,6 +58,7 @@ public class GameManager : MonoBehaviour
             }
         }
         instantiatedFruit = null;
+        lose = false;
     }
 
     // Update is called once per frame
@@ -92,5 +100,16 @@ public class GameManager : MonoBehaviour
     public bool isThereSnake(int nodeX, int nodeY)
     {
         return myNodos[nodeX, nodeY].snakePartPresent;
+    }
+
+    public void lostGame(bool isPlayerOne)
+    {
+        player1.GetComponent<SnakeControl>().setKeepPlaying(false); // Para la ejecución de ambos
+        player2.GetComponent<SnakeControl>().setKeepPlaying(false);
+        GuiManager.GetComponent<GUIManager>().ShowWinText(!isPlayerOne); // Gana el que no pierde, facil :D
+    }
+    public void OnRetryReset()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene(0); // Recarga la escena
     }
 }
