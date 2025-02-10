@@ -6,9 +6,9 @@ using UnityEngine;
 public class GUIManager : MonoBehaviour
 {
     [SerializeField]
-    private TextMeshPro pointsPlayer1;
+    private GameObject pointsPlayer1;
     [SerializeField]
-    private TextMeshPro pointsPlayer2;
+    private GameObject pointsPlayer2;
     [SerializeField]
     private GameObject winnerText;
     [SerializeField]
@@ -16,8 +16,8 @@ public class GUIManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        pointsPlayer1.SetText("0");
-        pointsPlayer1.SetText("0");
+        pointsPlayer1.GetComponent<TextMeshProUGUI>().SetText("0");
+        pointsPlayer2.GetComponent<TextMeshProUGUI>().SetText("0");
         winnerText.SetActive(false);
         retryButton.SetActive(false);
     }
@@ -30,32 +30,32 @@ public class GUIManager : MonoBehaviour
 
     public void ChangeP1Points(int points)
     {
-        pointsPlayer1.SetText(points.ToString());
+        pointsPlayer1.GetComponent<TextMeshProUGUI>().SetText(points.ToString());
     }
     public void ChangeP2Points(int points)
     {
-        pointsPlayer2.SetText(points.ToString());
+        pointsPlayer1.GetComponent<TextMeshProUGUI>().SetText(points.ToString());
     }
     public void ShowWinText(bool isPlayerOne)
     {
-        TextMeshPro myText = winnerText.GetComponent<TextMeshPro>();
+        TextMeshProUGUI myText = winnerText.GetComponent<TextMeshProUGUI>();
         if (isPlayerOne)
         {
             myText.SetText("Player 1 Wins");
-            myText.color = pointsPlayer1.color;
+            myText.color = pointsPlayer1.GetComponent<TextMeshProUGUI>().color;
         }
         else
         {
             myText.SetText("Player 2 Wins");
-            myText.color = pointsPlayer2.color;
+            myText.color = pointsPlayer2.GetComponent<TextMeshProUGUI>().color;
         }
         winnerText.SetActive(true);
         retryButton.SetActive(true);
     }
     public void OnRetryReset()
     {
-        pointsPlayer1.SetText("0");
-        pointsPlayer1.SetText("0");
+        pointsPlayer1.GetComponent<TextMeshProUGUI>().SetText("0");
+        pointsPlayer2.GetComponent<TextMeshProUGUI>().SetText("0");
         winnerText.SetActive(false);
         retryButton.SetActive(false);
     }

@@ -311,7 +311,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 98753550}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1399184998461341194, guid: 6b76a0973a158f94b83e6124072f2c56, type: 3}
+        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
+        m_MethodName: OnRetryReset
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: OnRetryReset()
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &98753550
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -350,6 +362,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 98753547}
   m_CullTransparentMesh: 1
+--- !u!1 &190174910 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6551087715323887425, guid: 46d19a388c27a044c84f887bda9bda83, type: 3}
+  m_PrefabInstance: {fileID: 1417650136}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &219070353
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -366,6 +383,18 @@ PrefabInstance:
       propertyPath: fruit
       value: 
       objectReference: {fileID: 2282261416929305084, guid: 01ea04681a7e9264a9794a67681fa2a2, type: 3}
+    - target: {fileID: 1399184998461341194, guid: 6b76a0973a158f94b83e6124072f2c56, type: 3}
+      propertyPath: player1
+      value: 
+      objectReference: {fileID: 1247056506}
+    - target: {fileID: 1399184998461341194, guid: 6b76a0973a158f94b83e6124072f2c56, type: 3}
+      propertyPath: player2
+      value: 
+      objectReference: {fileID: 190174910}
+    - target: {fileID: 1399184998461341194, guid: 6b76a0973a158f94b83e6124072f2c56, type: 3}
+      propertyPath: GuiManager
+      value: 
+      objectReference: {fileID: 1592944148}
     - target: {fileID: 1845226089613480028, guid: 6b76a0973a158f94b83e6124072f2c56, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -445,7 +474,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 120}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &387818448
@@ -14996,6 +15025,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1592944149}
+  - component: {fileID: 1592944150}
   m_Layer: 0
   m_Name: HUD
   m_TagString: Untagged
@@ -15019,6 +15049,22 @@ Transform:
   - {fileID: 61926938}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1592944150
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1592944148}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c0eba6e64e544e4eb4d1097b90bbc4c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pointsPlayer1: {fileID: 623563731}
+  pointsPlayer2: {fileID: 1511171583}
+  winnerText: {fileID: 387818446}
+  retryButton: {fileID: 98753547}
 --- !u!1 &1634576682
 GameObject:
   m_ObjectHideFlags: 0

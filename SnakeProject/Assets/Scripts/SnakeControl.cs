@@ -110,7 +110,7 @@ public class SnakeControl : MonoBehaviour
     /// </summary>
     protected void Move()
     {
-        int nodeX = 16 + Mathf.RoundToInt(headPart.parte.transform.position.x); // Para que no se cambie la direccion hasta haber alcanzado el nodo
+        int nodeX = 17 + Mathf.RoundToInt(headPart.parte.transform.position.x); // Para que no se cambie la direccion hasta haber alcanzado el nodo
         int nodeY = 9 - Mathf.RoundToInt(headPart.parte.transform.position.z);
         // Te mueves en la direccion que diga ese nodo si es diferente a tu dirección
         if (myNodos[nodeX, nodeY].direccion != new Vector3(0, 0, 0) && myNodos[nodeX, nodeY].direccion != headPart.direccion)
@@ -125,18 +125,13 @@ public class SnakeControl : MonoBehaviour
         // Movimiento discreto mejor, por nodos, no continuo con delta.
         headPart.parte.transform.position = myNodos[nodeX + Mathf.RoundToInt(headPart.direccion.x), nodeY - Mathf.RoundToInt(headPart.direccion.z)].centro;
 
-        if (headPart.parte.transform.position.x < -17 || headPart.parte.transform.position.x > 12 ||
-            headPart.parte.transform.position.y < -9 || headPart.parte.transform.position.y > 9) // Si has perdido
-        {
-            GameManager.Instance.lostGame(playerOne);
-        }
-        else
-        {
+        Debug.Log(headPart.parte.transform.position);
+
             GameManager.Instance.occupieNode(nodeX + Mathf.RoundToInt(headPart.direccion.x), nodeY - Mathf.RoundToInt(headPart.direccion.z));
 
-            nodeX = 16 + Mathf.RoundToInt(headPart.parte.transform.position.x); // Para comprobar si hay fruta o serpiente
+            nodeX = 17 + Mathf.RoundToInt(headPart.parte.transform.position.x); // Para comprobar si hay fruta o serpiente
             nodeY = 9 - Mathf.RoundToInt(headPart.parte.transform.position.z);
-            // Te comes la serpiente
+            // Te comes la fruta
             if (GameManager.Instance.isThereFruit(nodeX, nodeY))
             {
                 growthNeeded = true;
@@ -145,7 +140,7 @@ public class SnakeControl : MonoBehaviour
 
             for (int i = 0; i < bodyParts.Count; i++)
             {
-                nodeX = 16 + Mathf.RoundToInt(bodyParts[i].parte.transform.position.x);
+                nodeX = 17 + Mathf.RoundToInt(bodyParts[i].parte.transform.position.x);
                 nodeY = 9 - Mathf.RoundToInt(bodyParts[i].parte.transform.position.z);
                 BodyPart myPart = bodyParts[i];
 
@@ -163,7 +158,7 @@ public class SnakeControl : MonoBehaviour
                 GameManager.Instance.occupieNode(nodeX + Mathf.RoundToInt(myPart.direccion.x), nodeY - Mathf.RoundToInt(myPart.direccion.z));
                 bodyParts[i] = myPart;
             }
-            nodeX = 16 + Mathf.RoundToInt(tailPart.parte.transform.position.x);
+            nodeX = 17 + Mathf.RoundToInt(tailPart.parte.transform.position.x);
             nodeY = 9 - Mathf.RoundToInt(tailPart.parte.transform.position.z);
             // Para que nop gire sin parar en el mismo nodo
             if (!growthNeeded)
@@ -185,13 +180,17 @@ public class SnakeControl : MonoBehaviour
 
             }
             else growSomething();
+        if (headPart.parte.transform.position.x < -16 || headPart.parte.transform.position.x > 11 ||
+       headPart.parte.transform.position.z < -8 || headPart.parte.transform.position.z > 8) // Si has perdido
+        {
+            GameManager.Instance.lostGame(playerOne);
         }
 
     }
 
     protected void growSomething()
     {
-        int previusNodeX = 16 + Mathf.RoundToInt(bodyParts[bodyParts.Count - 1].parte.transform.position.x -
+        int previusNodeX = 17 + Mathf.RoundToInt(bodyParts[bodyParts.Count - 1].parte.transform.position.x -
            Mathf.RoundToInt(bodyParts[bodyParts.Count - 1].direccion.x));
         int previusNodeY = 9 - Mathf.RoundToInt(bodyParts[bodyParts.Count - 1].parte.transform.position.z -
            Mathf.RoundToInt(bodyParts[bodyParts.Count - 1].direccion.z));

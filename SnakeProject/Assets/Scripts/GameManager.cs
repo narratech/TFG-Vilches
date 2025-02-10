@@ -31,23 +31,21 @@ public class GameManager : MonoBehaviour
     private GameObject GuiManager;
 
     private GameObject instantiatedFruit;
-    public bool lose;
 
     private void Awake()
     {
         if(Instance == null) Instance = this;
-        DontDestroyOnLoad(gameObject);
     }
     // Start is called before the first frame update
     void Start()
     {
         freeNodes = new List<Vector2>();
-        myNodos = new NodeInfo[28, 19];
-        for (int i = -16; i < 12; i++)
+        myNodos = new NodeInfo[30, 19];
+        for (int i = -17; i < 13; i++)
         {
             for (int j = -9; j > -28; j--)
             {
-                int nodeX = 16 + i;
+                int nodeX = 17 + i;
                 int nodeY = -9 - j;
                 myNodos[nodeX, nodeY] = new NodeInfo(false,false, new Vector3(i, 0, 18 + j));
                 if(i !=-16 && i != 11 && j != -9 && j != -27)
@@ -58,7 +56,6 @@ public class GameManager : MonoBehaviour
             }
         }
         instantiatedFruit = null;
-        lose = false;
     }
 
     // Update is called once per frame
@@ -105,11 +102,12 @@ public class GameManager : MonoBehaviour
     public void lostGame(bool isPlayerOne)
     {
         player1.GetComponent<SnakeControl>().setKeepPlaying(false); // Para la ejecución de ambos
-        player2.GetComponent<SnakeControl>().setKeepPlaying(false);
+        //player2.GetComponent<SnakeControl>().setKeepPlaying(false);
         GuiManager.GetComponent<GUIManager>().ShowWinText(!isPlayerOne); // Gana el que no pierde, facil :D
     }
     public void OnRetryReset()
     {
+        UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(0);
         UnityEngine.SceneManagement.SceneManager.LoadScene(0); // Recarga la escena
     }
 }

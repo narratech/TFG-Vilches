@@ -30,7 +30,7 @@ public class ManualSnakeControl : SnakeControl
     {
         if((playerOne && Input.GetKeyDown(KeyCode.A)) || (!playerOne && Input.GetKeyDown(KeyCode.LeftArrow)))
         {
-            int nodeX = 16 + Mathf.RoundToInt(headPart.parte.transform.position.x);
+            int nodeX = 17 + Mathf.RoundToInt(headPart.parte.transform.position.x);
             int nodeY = 9 - Mathf.RoundToInt(headPart.parte.transform.position.z);
             //Marcas el siguiente nodo de tu direccion para giro
             Vector3 newDirect = Quaternion.AngleAxis(-90, Vector3.up) * myDirection;
@@ -42,7 +42,7 @@ public class ManualSnakeControl : SnakeControl
         }
         else if ((playerOne && Input.GetKeyDown(KeyCode.D)) || (!playerOne && Input.GetKeyDown(KeyCode.RightArrow)))
         {
-            int nodeX = 16 + Mathf.RoundToInt(headPart.parte.transform.position.x);
+            int nodeX = 17 + Mathf.RoundToInt(headPart.parte.transform.position.x);
             int nodeY = 9 - Mathf.RoundToInt(headPart.parte.transform.position.z);
             //Marcas el siguiente nodo de tu direccion para giro
             Vector3 newDirect = Quaternion.AngleAxis(90, Vector3.up) * myDirection;
