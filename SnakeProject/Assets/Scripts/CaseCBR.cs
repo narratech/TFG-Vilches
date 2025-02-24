@@ -9,6 +9,29 @@ public enum DistanceMethod
     Manhattan,
     Euclidean
 }
+
+public class CaseComparer : IComparer<Tuple<CaseCBR, float>>
+{
+    // Compara el score del caso y su similitud.
+    public int Compare(Tuple<CaseCBR, float> x, Tuple<CaseCBR, float> y)
+    {
+        //Teniendo en cuenta que un valor optimo medio seria no morir y comer 5 pills (10 pts cada una),
+        //la puntuacion se reduce a 0.0005 para dar un valor que no eclipse a la similitud
+        // El multiplicador del score habria que retocarlo
+        double actualValueX = x.Item1.getScore() * x.Item1.weight * 0.001 + x.Item2 * 0.8;
+        double actualValueY = y.Item1.getScore() * y.Item1.weight * 0.001 + y.Item2 * 0.8;
+        if (actualValueX > actualValueY)
+        {
+            return -1;
+        }
+        else if (actualValueX < actualValueY)
+        {
+            return 1;
+        }
+        else return 0;
+    }
+}
+
 public class CaseCBR 
 {
     // Pensando en hacerlo todo en un dicionario <string, Tuple<enumerador con la clase,Object>> para meterlo todo
@@ -28,6 +51,8 @@ public class CaseCBR
 
     private dynamic answer; // Es dinamico porque no sabemos si sera un string, enumerador, int... Lo que el usuario quiera
     private float score; // Que el usuario decida como de bueno es el caso una vez utilizado según sus propias métricas
+    public int weight; // Veces que aparece en la base de datos
+    private Dictionary<string, float> wheigths;
 
     public CaseCBR() 
     { 
@@ -35,50 +60,57 @@ public class CaseCBR
     }
     // Métodos para añadir a sus respectivas listas
     #region addToCase/setters
-    public void addFloatToCase(float value, string name)
+    public void addFloatToCase(float value, string name, float weight = 1)
     {
         if(similarityFloat == null) similarityFloat = new Dictionary<string, float>();
         similarityFloat[name] = value;
+        wheigths[name] = weight; 
     }
 
-    public void addFloatListToCase(List<float> value, string name)
+    public void addFloatListToCase(List<float> value, string name, float weight = 1)
     {
         if (similarityFloatLists == null) similarityFloatLists = new Dictionary<string, List<float>>();
         similarityFloatLists[name] = value;
+        wheigths[name] = weight;
     }
 
-    public void addVector2ToCase(UnityEngine.Vector2 value,DistanceMethod method, string name)
+    public void addVector2ToCase(UnityEngine.Vector2 value,DistanceMethod method, string name, float weight = 1)
     {
         if (similarityVec2 == null) similarityVec2 = new Dictionary<string, Tuple<DistanceMethod, UnityEngine.Vector2>>();
         similarityVec2[name] = new Tuple<DistanceMethod,UnityEngine.Vector2>(method,value);
     }
 
-    public void addVector3ToCase(UnityEngine.Vector3 value, DistanceMethod method, string name)
+    public void addVector3ToCase(UnityEngine.Vector3 value, DistanceMethod method, string name, float weight = 1)
     {
         if (similarityVec3 == null) similarityVec3 = new Dictionary<string, Tuple<DistanceMethod, UnityEngine.Vector3>>();
         similarityVec3[name] = new Tuple<DistanceMethod, UnityEngine.Vector3>(method, value);
+        wheigths[name] = weight;
     }
 
-    public void addVector2ListToCase(List<UnityEngine.Vector2> value, DistanceMethod method, string name)
+    public void addVector2ListToCase(List<UnityEngine.Vector2> value, DistanceMethod method, string name, float weight = 1)
     {
         if (similarityVec2List == null) similarityVec2List = new Dictionary<string, Tuple<DistanceMethod, List<UnityEngine.Vector2>>>();
         similarityVec2List[name] = new Tuple<DistanceMethod, List<UnityEngine.Vector2>>(method, value);
+        wheigths[name] = weight;
     }
-    public void addVector3ListToCase(List<UnityEngine.Vector3> value, DistanceMethod method, string name)
+    public void addVector3ListToCase(List<UnityEngine.Vector3> value, DistanceMethod method, string name, float weight = 1)
     {
         if (similarityVec3List == null) similarityVec3List = new Dictionary<string, Tuple<DistanceMethod, List<UnityEngine.Vector3>>>();
         similarityVec3List[name] = new Tuple<DistanceMethod, List<UnityEngine.Vector3>>(method, value);
+        wheigths[name] = weight;
     }
 
-    public void addBoolToCase(bool value,string name)
+    public void addBoolToCase(bool value,string name, float weight = 1)
     {
         if (similarityBool == null) similarityBool = new Dictionary<string, bool>();
         similarityBool[name] = value;
+        wheigths[name] = weight;
     }
-    public void addBoolListToCase(List<bool> value, string name)
+    public void addBoolListToCase(List<bool> value, string name, float weight = 1)
     {
         if (similarityBoolList == null) similarityBoolList = new Dictionary<string, List<bool>>();
         similarityBoolList[name] = value;
+        wheigths[name] = weight;
     }
 
     public void setAnswer(dynamic value)
@@ -153,6 +185,10 @@ public class CaseCBR
     public float getScore()
     {
         return score;
+    }
+    public float getVariableWeight(string name)
+    {
+        return wheigths[name];
     }
 
     #endregion
