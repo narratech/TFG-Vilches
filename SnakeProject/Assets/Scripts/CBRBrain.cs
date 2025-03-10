@@ -10,6 +10,7 @@ public class CBRBrain
     Queue<CaseCBR> caseToEvaluate;
     List<CaseCBR> caseToSave;
     List<CaseCBR> readedCases;
+    string pathToCSV;
     CBRBrain(string path)
     {
         caseToSave = new List<CaseCBR>();
@@ -20,6 +21,10 @@ public class CBRBrain
         parseCase(myReader);
         myReader.Close();
     }
+    /// <summary>
+    /// Se encarga de leer los cases del csv y convertirlos a casos de la logica
+    /// </summary>
+    /// <param name="myReader">Streamreader para leer</param>
     private void parseCase(StreamReader myReader)
     {
         CaseCBR myCase = new CaseCBR();
@@ -122,8 +127,9 @@ public class CBRBrain
             readedCases.Add(myCase);
         }
     }
+    //Pendiente, tengo que ver donde crearlo, al parecer Application.datapath es readOnly.
     private void writeCase()
     {
-
+        StreamWriter
     }
 }
