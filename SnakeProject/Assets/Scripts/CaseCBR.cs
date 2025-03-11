@@ -4,12 +4,6 @@ using System.Collections.Generic;
 using System.Numerics;
 using UnityEngine;
 
-public enum DistanceMethod //Duda: No tengo muy claro si esta informacion tiene que estar aqui o la tiene que manejar el brain
-{
-    Manhattan,
-    Euclidean
-}
-
 public class CaseComparer : IComparer<Tuple<CaseCBR, float>>
 {
     // Compara el score del caso y su similitud.
@@ -39,10 +33,10 @@ public class CaseCBR
     private Dictionary<string, float> similarityFloat = null;
     private Dictionary<string, List<float>> similarityFloatLists = null;
 
-    private Dictionary<string, Tuple<DistanceMethod, UnityEngine.Vector3>> similarityVec3 = null;
-    private Dictionary<string, Tuple<DistanceMethod, UnityEngine.Vector2>> similarityVec2 = null;
-    private Dictionary<string, Tuple<DistanceMethod,List<UnityEngine.Vector3>>> similarityVec3List = null;
-    private Dictionary<string, Tuple<DistanceMethod, List<UnityEngine.Vector2>>> similarityVec2List = null;
+    private Dictionary<string, UnityEngine.Vector3> similarityVec3 = null;
+    private Dictionary<string, UnityEngine.Vector2> similarityVec2 = null;
+    private Dictionary<string, List<UnityEngine.Vector3>> similarityVec3List = null;
+    private Dictionary<string, List<UnityEngine.Vector2>> similarityVec2List = null;
 
     private Dictionary<string, string> similarityStrings = null; //????
 
@@ -71,27 +65,27 @@ public class CaseCBR
         similarityFloatLists[name] = value;
     }
 
-    public void addVector2ToCase(UnityEngine.Vector2 value,DistanceMethod method, string name)
+    public void addVector2ToCase(UnityEngine.Vector2 value, string name)
     {
-        if (similarityVec2 == null) similarityVec2 = new Dictionary<string, Tuple<DistanceMethod, UnityEngine.Vector2>>();
-        similarityVec2[name] = new Tuple<DistanceMethod,UnityEngine.Vector2>(method,value);
+        if (similarityVec2 == null) similarityVec2 = new Dictionary<string, UnityEngine.Vector2>();
+        similarityVec2[name] = value;
     }
 
-    public void addVector3ToCase(UnityEngine.Vector3 value, DistanceMethod method, string name)
+    public void addVector3ToCase(UnityEngine.Vector3 value,string name)
     {
-        if (similarityVec3 == null) similarityVec3 = new Dictionary<string, Tuple<DistanceMethod, UnityEngine.Vector3>>();
-        similarityVec3[name] = new Tuple<DistanceMethod, UnityEngine.Vector3>(method, value);
+        if (similarityVec3 == null) similarityVec3 = new Dictionary<string, UnityEngine.Vector3>();
+        similarityVec3[name] = value;
     }
 
-    public void addVector2ListToCase(List<UnityEngine.Vector2> value, DistanceMethod method, string name)
+    public void addVector2ListToCase(List<UnityEngine.Vector2> value, string name)
     {
-        if (similarityVec2List == null) similarityVec2List = new Dictionary<string, Tuple<DistanceMethod, List<UnityEngine.Vector2>>>();
-        similarityVec2List[name] = new Tuple<DistanceMethod, List<UnityEngine.Vector2>>(method, value);
+        if (similarityVec2List == null) similarityVec2List = new Dictionary<string, List<UnityEngine.Vector2>>();
+        similarityVec2List[name] = value;
     }
-    public void addVector3ListToCase(List<UnityEngine.Vector3> value, DistanceMethod method, string name)
+    public void addVector3ListToCase(List<UnityEngine.Vector3> value, string name)
     {
-        if (similarityVec3List == null) similarityVec3List = new Dictionary<string, Tuple<DistanceMethod, List<UnityEngine.Vector3>>>();
-        similarityVec3List[name] = new Tuple<DistanceMethod, List<UnityEngine.Vector3>>(method, value);
+        if (similarityVec3List == null) similarityVec3List = new Dictionary<string, List<UnityEngine.Vector3>>();
+        similarityVec3List[name] = value;
     }
 
     public void addBoolToCase(bool value,string name)
@@ -113,7 +107,7 @@ public class CaseCBR
     {
         score = value;
     }
-    public void setWeigth (float w)
+    public void setWeigth (int w)
     {
         weight = w;
     }
@@ -134,27 +128,27 @@ public class CaseCBR
         else return similarityFloatLists[name];
     }
 
-    public Tuple<DistanceMethod,UnityEngine.Vector2> getVector2(string name)
+    public UnityEngine.Vector2 getVector2(string name)
     {
         if (similarityVec2 == null) throw new NullReferenceException("No existen elementos que mirar");
         else if (!similarityVec2.ContainsKey(name)) throw new ArgumentOutOfRangeException("El argumento no existe");
         else return similarityVec2[name];
     }
 
-    public Tuple<DistanceMethod, UnityEngine.Vector3> getVector3(string name)
+    public UnityEngine.Vector3 getVector3(string name)
     {
         if (similarityVec3 == null) throw new NullReferenceException("No existen elementos que mirar");
         else if (!similarityVec3.ContainsKey(name)) throw new ArgumentOutOfRangeException("El argumento no existe");
         else return similarityVec3[name];
     }
 
-    public Tuple<DistanceMethod, List<UnityEngine.Vector2>> getVector2List(string name)
+    public List<UnityEngine.Vector2> getVector2List(string name)
     {
         if (similarityVec2List == null) throw new NullReferenceException("No existen elementos que mirar");
         else if (!similarityVec2List.ContainsKey(name)) throw new ArgumentOutOfRangeException("El argumento no existe");
         else return similarityVec2List[name];
     }
-    public Tuple<DistanceMethod, List<UnityEngine.Vector3>> getVector3List(string name)
+    public List<UnityEngine.Vector3> getVector3List(string name)
     {
         if (similarityVec3List == null) throw new NullReferenceException("No existen elementos que mirar");
         else if (!similarityVec3List.ContainsKey(name)) throw new ArgumentOutOfRangeException("El argumento no existe");
@@ -185,6 +179,21 @@ public class CaseCBR
     public int getWeight()
     {
         return weight;
+    }
+    public List<string> getVariableNames()
+    {
+        List<string> names = new List<string>();
+        foreach(string name in similarityFloat.Keys)names.Add(name+":float");
+        foreach(string name in similarityFloatLists.Keys)names.Add(name+":floatList");
+        foreach(string name in similarityBool.Keys)names.Add(name+":bool");
+        foreach(string name in similarityBoolList.Keys)names.Add(name+":boolList");
+        foreach(string name in similarityVec2.Keys)names.Add(name+":vector2");
+        foreach(string name in similarityVec2List.Keys)names.Add(name+":vector2List");
+        foreach(string name in similarityVec3.Keys)names.Add(name+":vector3");
+        foreach(string name in similarityVec3List.Keys)names.Add(name+":vector3List");
+        names.Add("Weight:Weight");
+
+        return names;
     }
 
     #endregion
