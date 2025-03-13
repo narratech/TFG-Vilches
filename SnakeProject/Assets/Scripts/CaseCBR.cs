@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using UnityEngine;
 
+// Seguramente sea una clase de la que el usuario podrá implementar su propio comparador, pero necesita un comparador por defecto
 public class CaseComparer : IComparer<Tuple<CaseCBR, float>>
 {
     // Compara el score del caso y su similitud.
@@ -12,8 +13,10 @@ public class CaseComparer : IComparer<Tuple<CaseCBR, float>>
         //Teniendo en cuenta que un valor optimo medio seria no morir y comer 5 pills (10 pts cada una),
         //la puntuacion se reduce a 0.0005 para dar un valor que no eclipse a la similitud
         // El multiplicador del score habria que retocarlo
-        double actualValueX = x.Item1.getScore() * x.Item1.weight * 0.001 + x.Item2 * 0.8;
-        double actualValueY = y.Item1.getScore() * y.Item1.weight * 0.001 + y.Item2 * 0.8;
+        //double actualValueX = x.Item1.getScore() * x.Item1.weight * 0.001 + x.Item2 * 0.8;
+        //double actualValueY = y.Item1.getScore() * y.Item1.weight * 0.001 + y.Item2 * 0.8;
+        double actualValueX = x.Item2;
+        double actualValueY = y.Item2;
         if (actualValueX > actualValueY)
         {
             return -1;
@@ -44,7 +47,6 @@ public class CaseCBR
     private Dictionary<string,List<bool>> similarityBoolList;
 
     private dynamic answer; // Es dinamico porque no sabemos si sera un string, enumerador, int... Lo que el usuario quiera
-    private float score; // Que el usuario decida como de bueno es el caso una vez utilizado según sus propias métricas
     public int weight; // Veces que aparece en la base de datos
 
     public CaseCBR() 
@@ -102,10 +104,6 @@ public class CaseCBR
     public void setAnswer(dynamic value)
     {
         answer = value;
-    }
-    public void setScore(float value)
-    {
-        score = value;
     }
     public void setWeigth (int w)
     {
@@ -171,10 +169,6 @@ public class CaseCBR
     public dynamic getAnswer()
     {
         return answer;
-    }
-    public float getScore()
-    {
-        return score;
     }
     public int getWeight()
     {

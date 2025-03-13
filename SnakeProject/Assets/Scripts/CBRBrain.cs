@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Xml.Linq;
 using UnityEngine;
 
 public class CBRBrain
@@ -10,8 +11,10 @@ public class CBRBrain
     Queue<CaseCBR> caseToEvaluate;
     List<CaseCBR> caseToSave;
     List<CaseCBR> readedCases;
-    string pathToCSV;
-    CBRBrain(string CSVname)
+
+    Dictionary<string, float> weights;
+    int kNNRequired;
+    public CBRBrain(string CSVname, int kNNRequired = 1)
     {
         caseToSave = new List<CaseCBR>();
         readedCases = new List<CaseCBR>();
@@ -19,10 +22,13 @@ public class CBRBrain
         {
             StreamReader myReader = new StreamReader("CaseBase/" + CSVname);
             // Lee y parsea los datos a casos
-            parseCase(myReader);
+            readCases(myReader);
             myReader.Close();
         }
+
+        this.kNNRequired = kNNRequired;
     }
+    #region private
     /// <summary>
     /// Se encarga de leer los cases del csv y convertirlos a casos de la logica
     /// </summary>
@@ -56,4 +62,50 @@ public class CBRBrain
 
         myWriter.Close();
     }
+    #endregion
+    #region public
+    //DUDA: Luego normalizo los pesos yo para que sumen 1?
+    /// <summary>
+    /// Añade un valor al peso de una caracteristica
+    /// </summary>
+    /// <param name="key">Nombre de la caracteristica a la que se asocia el peso</param>
+    /// <param name="w">Valor del peso (entre 0 y 1, preferiblemente todos los pesos suman 1)</param>
+    public void setWeigth(string key, float w)
+    {
+        weights[key] = w;
+    }
+
+    /// <summary>
+    /// Se encarga de comparar los casos leidos con el query y devolver los kNN Casos más prometedores
+    /// (Parecidos o mejores, según ponderación del usuario)
+    /// </summary>
+    /// <param name="query">Caso presentado al sistema</param>
+    /// <returns>Los kNN casos más prometedores, ordenados de más a menos prometedor</returns>
+    public SortedSet<Tuple<CaseCBR, float>> retrieveKNNCases(CaseCBR query)
+    {
+        SortedSet<Tuple<CaseCBR, float>> kNNCases = new SortedSet<Tuple<CaseCBR, float>>(new CaseComparer());
+        foreach(CaseCBR myCase in readedCases) 
+        {
+            if (kNNCases.Count < kNNRequired)
+            {
+                kNNCases.Add(CaseUtility.computeSimilarity(query, myCase, weights));
+            }
+            else
+            {
+                IEnumerator iterator = kNNCases.Reverse().GetEnumerator();
+                iterator.MoveNext(); // El elemento menos parecido o menos valioso
+                Tuple<CaseCBR, float> otherCase = CaseUtility.computeSimilarity(query,myCase,weights);
+
+                // Si el nuevo caso visto es mejor que el peor, borra el peor guardado y mete el nuevo
+                if (((Tuple<CaseCBR, float>)iterator.Current).Item2 <  otherCase.Item2) 
+                {
+                    kNNCases.Remove((Tuple<CaseCBR, float>)iterator.Current);
+                    kNNCases.Add(otherCase);
+                }
+            }
+        }
+        return kNNCases;
+    }
+    //TODO ReuseCases; ReviseAnswer; RetainCases;
+    #endregion
 }
