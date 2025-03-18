@@ -107,5 +107,21 @@ public class CBRBrain
         return kNNCases;
     }
     //TODO ReuseCases; ReviseAnswer; RetainCases;
+    /// <summary>
+    /// Elige el resultado a utilizar obtenido de los casos anteriores y
+    /// lo coloca en la query, creando el caso para su posterior evaluacion.
+    /// DUDA: Esto es un placeholder que funcionaria, pero no se si dejarlo asi.
+    /// De momento, solo coge el resultado del caso más prometedor, no se si hacer algo tipo combinación o, si me da tiempo, adaptación con genético
+    /// </summary>
+    /// <param name="knnCases">Los casos más prometedores de los que escoger</param>
+    /// <param name="query">El caso presentado que se va a generar</param>
+    /// <returns>El resultado a utilizar en el juego</returns>
+    public dynamic reuseCases(SortedSet<Tuple<CaseCBR, float>> knnCases, CaseCBR query)
+    {
+        IEnumerator iterator = knnCases.GetEnumerator();
+        iterator.MoveNext(); // El elemento más prometedor 
+        query.setAnswer(((Tuple<CaseCBR, float>)iterator.Current).Item1.getAnswer());
+        return ((Tuple<CaseCBR, float>)iterator.Current).Item1.getAnswer();
+    }
     #endregion
 }
