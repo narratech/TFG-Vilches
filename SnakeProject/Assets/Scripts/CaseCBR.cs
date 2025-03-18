@@ -4,7 +4,10 @@ using System.Collections.Generic;
 using System.Numerics;
 using UnityEngine;
 
-// Seguramente sea una clase de la que el usuario podrá implementar su propio comparador, pero necesita un comparador por defecto
+//DUDA: Seguramente sea una clase de la que el usuario podrá implementar su propio comparador, pero necesita un comparador por defecto
+/// <summary>
+/// Clase que se encarga de comparar dos casos según su similitud con otro para decidir cual es más parecido, de momento
+/// </summary>
 public class CaseComparer : IComparer<Tuple<CaseCBR, float>>
 {
     // Compara el score del caso y su similitud.
@@ -52,6 +55,19 @@ public class CaseCBR
     public CaseCBR() 
     { 
         answer = null;
+    }
+    public CaseCBR(CaseCBR otherCase)
+    {
+        this.similarityFloat = otherCase.similarityFloat;
+        this.similarityFloatLists = otherCase.similarityFloatLists;
+        this.similarityBool = otherCase.similarityBool;
+        this.similarityBoolList = otherCase.similarityBoolList;
+        this.similarityVec2 = otherCase.similarityVec2;
+        this.similarityVec2List = otherCase.similarityVec2List;
+        this.similarityVec3 = otherCase.similarityVec3;
+        this.similarityVec3List = otherCase.similarityVec3List;
+        this.weight = otherCase.weight;
+        this.answer = otherCase.answer;
     }
     // Métodos para añadir a sus respectivas listas
     #region addToCase/setters
