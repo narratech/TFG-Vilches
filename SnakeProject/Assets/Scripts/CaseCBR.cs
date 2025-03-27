@@ -36,9 +36,12 @@ public class CaseCBR
 {
     // Pensando en hacerlo todo en un dicionario <string, Tuple<enumerador con la clase,Object>> para meterlo todo
     // En una sola estructura
+    // MIRAR REFLEXION EN C# (CREAR ESTRUCTURAS DE CLASE EN EJECUCIÓN)
+    // EN CASO DE QUE NO SE PUEDA, HACER INTERFAZ
     private Dictionary<string, float> similarityFloat = null;
     private Dictionary<string, List<float>> similarityFloatLists = null;
 
+    // HACER COMPARACIONES POR DISTANCIAS BASICAS A LOS USUARIOS CON VECTORES Y QUE ELLOS HAGAN LO ESPECIFICO
     private Dictionary<string, UnityEngine.Vector3> similarityVec3 = null;
     private Dictionary<string, UnityEngine.Vector2> similarityVec2 = null;
     private Dictionary<string, List<UnityEngine.Vector3>> similarityVec3List = null;

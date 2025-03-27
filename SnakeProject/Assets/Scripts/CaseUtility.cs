@@ -171,17 +171,23 @@ public class CaseUtility
     }
     /// <summary>
     /// DUDA: La idea es que sea el usuario el que decida como quiere ponderar la similitud de sus casos, a lo mejor un método interfaz????
+    /// HACER SIMILITUD STANDARD CON EUCLIDEA Y MANHATTAN Y QUE ESTA RECIBA UNA LAMBDA PARA DAR LIBERTAD DE DECIDIR
+    /// DUDA: Cómo determino cómo de significativo es la diferencia o igualdad.
     /// </summary>
     /// <param name="query">El caso que se presenta</param>
     /// <param name="caseToLook">El caso a comparar</param>
     /// <param name="weigths">Diccionario con los pesos de cada variable, asignados en el cbrBrain</param>
     /// <returns>La tupla con el caso a comparar y su similitud con el presentado</returns>
-    public static Tuple<CaseCBR, float> computeSimilarity(CaseCBR query, CaseCBR caseToLook, Dictionary<string, float> weigths)
+    public static Tuple<CaseCBR, float> computeSimilarity(in CaseCBR query, in CaseCBR caseToLook, Dictionary<string, float> weigths)
     {
         Tuple<CaseCBR, float> myTuple = new Tuple<CaseCBR, float>(caseToLook, 0);
         List<string> variableNames = query.getVariableNames();
         //TODO
         return myTuple;
+    }
+    private static float computeManhattanSimilarity(in CaseCBR query, in CaseCBR caseToLook, Dictionary<string, float> weigths, Dictionary<string,float>distanceRange)
+    {
+
     }
         
 

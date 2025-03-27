@@ -7,11 +7,17 @@ using System.Linq;
 using System.Xml.Linq;
 using UnityEngine;
 
+public enum ReviseType
+{
+    alwaysRetain,custom
+}
 public class CBRBrain
 {
     Queue<CaseCBR> casesToEvaluate;
     List<CaseCBR> caseToSave;
     List<CaseCBR> readedCases;
+
+    List<Tuple<CaseCBR, float>> possibleTwins;
 
     Dictionary<string, float> weights;
     int kNNRequired;
@@ -69,15 +75,25 @@ public class CBRBrain
     }
     #endregion
     #region public
-    //DUDA: Luego normalizo los pesos yo para que sumen 1?
     /// <summary>
-    /// Añade un valor al peso de una caracteristica
+    /// Añade un valor al peso de una caracteristica y se normaliza
     /// </summary>
     /// <param name="key">Nombre de la caracteristica a la que se asocia el peso</param>
     /// <param name="w">Valor del peso (entre 0 y 1, preferiblemente todos los pesos suman 1)</param>
     public void setWeigth(string key, float w)
     {
         weights[key] = w;
+        float sum = 0;
+        Dictionary<string,float>.Enumerator it = weights.GetEnumerator();
+        while (it.MoveNext())
+        {
+            sum += it.Current.Value;
+        }
+        it = weights.GetEnumerator();
+        while (it.MoveNext())
+        {
+            weights[it.Current.Key] = weights[it.Current.Key] / sum; // Se normalizan los pesos
+        }
     }
     /// <summary>
     /// Se llama cuando el usuario considere que se tiene que evaluar el siguiente caso de la cola de evaluacion
@@ -120,13 +136,15 @@ public class CBRBrain
         }
         return kNNCases;
     }
-    //TODO ReuseCases; ReviseAnswer; RetainCases;
     /// <summary>
     /// Elige el resultado a utilizar obtenido de los casos anteriores y
     /// lo coloca en la query, creando el caso para su posterior evaluacion.
     /// DUDA: Esto es un placeholder que funcionaria, pero no se si dejarlo asi.
     /// De momento, solo coge el resultado del caso más prometedor, no se si hacer algo tipo combinación, 
     /// hacerlo por votacion de los knn resultados
+    //TODO
+    /// VOTO DE LA MAYORIA
+    /// POR PESOS
     /// o, si me da tiempo, adaptación con genético
     /// </summary>
     /// <param name="knnCases">Los casos más prometedores de los que escoger</param>
@@ -139,16 +157,34 @@ public class CBRBrain
         query.setAnswer(((Tuple<CaseCBR, float>)iterator.Current).Item1.getAnswer());
         return ((Tuple<CaseCBR, float>)iterator.Current).Item1.getAnswer();
     }
-    // DUDA: No se me ocurre como hacer que el usuario decida cómo quiere decidir que se evalue el "performance" de su caso
-    // por lo que se me ocurre que el se defina el comparer y que el CBRBrain tenga una variable interna "scoreThreshold"
-    // O que este método lo implemente el usuario directamente.
-    public bool reviseCase<T>(CaseCBR myCase, IComparer<T> comparer)
+// PENDIENTE DE REVISIÓN
+/// <summary>
+/// Recibe un enum con el tipo de revisión que se quiere hacer y la función de revisión cómo expresión lamda introducida
+/// por el usuario, que debe devolver un booleano indicando si el caso es útil y se guarda o no
+/// Por defecto, siempre guarda el caso
+/// </summary>
+/// <param name="type">Enumerador indicando el tipo de revisión</param>
+/// <param name="myFunc">Función lambda para la revisión custom. Puede ser null si se va con la por defecto</param>
+/// <param name="args">Argumentos necesarios para la función lamda. Puede ser null si esta no los necesita</param>
+/// <returns></returns>
+    public bool reviseCase(ReviseType type, Func<System.Object[], bool> myFunc = null, System.Object[] args = null)
     {
-        return true;
+        if (type == ReviseType.custom)
+        {
+            //ERROR: myFunc es null
+            bool save = myFunc(args);
+            if(!save) possibleTwins.Clear(); // Si n o lo vas a guardar, no te interesa saber si ya hay en la base de datos
+            return save;
+        }
+        else return true;
     }
+    //TODO: Revisar si dos casos son muy iguales (estoy guardando los posibles gemelos en una variable de la clase que
+    // se vacia en cada caso y que se rellena en el retrieve knn
     /// <summary>
     /// Añade el caso a la lista de casos por guardar y también a la base de datos para usar
     /// DUDA: No se si hacer la lista de tamaño fijo e ir escribiendo casos periodicamente (flush) o escribirlos todos al final
+    /// BASE: GUARDA AL FINAL
+    /// UTILIDAD: GUARDAR CON UN BOTON
     /// </summary>
     /// <param name="myCase">Caso para guardar</param>
     ///<param name="similarityThreshold">Limite de similaridad con el más parecido para guardar o sumar peso al previo</param>
