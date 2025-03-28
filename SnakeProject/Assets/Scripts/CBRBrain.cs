@@ -11,6 +11,10 @@ public enum ReviseType
 {
     alwaysRetain,custom
 }
+public enum reuseAnswerType
+{
+    mostSimilar, mostVoted, weighted
+}
 public class CBRBrain
 {
     Queue<CaseCBR> casesToEvaluate;
@@ -137,25 +141,66 @@ public class CBRBrain
         return kNNCases;
     }
     /// <summary>
-    /// Elige el resultado a utilizar obtenido de los casos anteriores y
-    /// lo coloca en la query, creando el caso para su posterior evaluacion.
-    /// DUDA: Esto es un placeholder que funcionaria, pero no se si dejarlo asi.
-    /// De momento, solo coge el resultado del caso más prometedor, no se si hacer algo tipo combinación, 
-    /// hacerlo por votacion de los knn resultados
-    //TODO
-    /// VOTO DE LA MAYORIA
-    /// POR PESOS
-    /// o, si me da tiempo, adaptación con genético
+    /// Se elige el método de selección para ver cómo se elige la respuesta que se va a usar.
+    /// Los tres modos son: 
+    /// Usar el más similar
+    /// Voto de la mayoría
+    /// Por pesos
     /// </summary>
     /// <param name="knnCases">Los casos más prometedores de los que escoger</param>
     /// <param name="query">El caso presentado que se va a generar</param>
     /// <returns>El resultado a utilizar en el juego</returns>
-    public dynamic reuseCases(in SortedSet<Tuple<CaseCBR, float>> knnCases, ref CaseCBR query)
+    public  T reuseCases <T>(in SortedSet<Tuple<CaseCBR, float>> knnCases, ref CaseCBR query, reuseAnswerType type)
     {
-        IEnumerator iterator = knnCases.GetEnumerator();
-        iterator.MoveNext(); // El elemento más prometedor 
-        query.setAnswer(((Tuple<CaseCBR, float>)iterator.Current).Item1.getAnswer());
-        return ((Tuple<CaseCBR, float>)iterator.Current).Item1.getAnswer();
+        
+        if(type == reuseAnswerType.mostVoted)
+        {
+            Dictionary <System.Object, int> votes = new Dictionary<object, int>();
+            Tuple<T, int> answer = null;
+            foreach(Tuple<CaseCBR,float> myCase in knnCases)
+            {
+                if (!votes.ContainsKey(query.getAnswer()))
+                {
+                    votes.Add(myCase.Item1.getAnswer(), 1);
+                    if(answer == null) answer = new Tuple<T,int>(myCase.Item1.getAnswer(),1);
+                }
+                else
+                {
+                    votes[myCase.Item1.getAnswer()]++;
+                    if(answer.Item2 < votes[myCase.Item1.getAnswer()]) answer = new Tuple<T, int>(myCase.Item1.getAnswer(), 1);
+                }
+            }
+            query.setAnswer(answer.Item1);
+            return answer.Item1;
+        }
+        else if(type == reuseAnswerType.weighted)
+        {
+            Dictionary<System.Object, int> votes = new Dictionary<object, int>();
+            Tuple<T, int> answer = null;
+            foreach (Tuple<CaseCBR, float> myCase in knnCases)
+            {
+                if (!votes.ContainsKey(query.getAnswer()))
+                {
+                    votes.Add(myCase.Item1.getAnswer(), myCase.Item1.getWeight());
+                    if (answer == null) answer = new Tuple<T, int>(myCase.Item1.getAnswer(), myCase.Item1.getWeight());
+                }
+                else
+                {
+                    votes[myCase.Item1.getAnswer()]+= myCase.Item1.getWeight();
+                    if (answer.Item2 < votes[myCase.Item1.getAnswer()]) 
+                        answer = new Tuple<T, int>(myCase.Item1.getAnswer(), votes[myCase.Item1.getAnswer()]);
+                }
+            }
+            query.setAnswer(answer.Item1);
+            return answer.Item1;
+        }
+        else
+        {
+            IEnumerator iterator = knnCases.GetEnumerator();
+            iterator.MoveNext(); // El elemento más prometedor 
+            query.setAnswer(((Tuple<CaseCBR, float>)iterator.Current).Item1.getAnswer());
+            return ((Tuple<CaseCBR, float>)iterator.Current).Item1.getAnswer(); // Supongo que, al ser en tiempo de ejecucion, esto se resolvera solo
+        }
     }
 // PENDIENTE DE REVISIÓN
 /// <summary>

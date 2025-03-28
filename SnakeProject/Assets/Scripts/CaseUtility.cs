@@ -89,7 +89,8 @@ public class CaseUtility
         }
         return myCase;
     }
-
+    // Si se va a hacer con la calse dinamica, puedes hacer un delegate que llame a los métodos "get_"+NombreVariable, 
+    // iterando por todos los nombres de variables y hacer un switch para cada tipo con los typeOf (en caso de enums, mirar si se puede con strings, si no, se hara con ints)
     public static string parseCaseToCSV(CaseCBR myCase)
     {
         string myCaseParsed = "";
