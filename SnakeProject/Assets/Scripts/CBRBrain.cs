@@ -17,6 +17,7 @@ public enum reuseAnswerType
 }
 public class CBRBrain
 {
+    CaseSerializer caseSerializer; // Va a hacer falta para leer y guardar los archivos
     Queue<CaseCBR> casesToEvaluate;
     List<CaseCBR> caseToSave;
     List<CaseCBR> readedCases;
