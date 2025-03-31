@@ -6,6 +6,18 @@ using System.Reflection.Emit;
 using UnityEditor.Compilation;
 using UnityEngine;
 
+public interface CaseComparer
+{
+    /// <summary>
+    /// Interfaz que se tiene que implementar a gusto del usuario para decidir como quiere comparar sus casos y contabilizar
+    /// la similitud
+    /// </summary>
+    /// <param name="query">El caso que se presenta</param>
+    /// <param name="caseToLook">El caso a comparar</param>
+    /// <param name="weigths">Diccionario con los pesos de cada variable, asignados en el cbrBrain</param>
+    /// <returns>La tupla con el caso a comparar y su similitud con el presentado</returns>
+    public abstract Tuple<CaseCBR, float> computeSimilarity(in CaseCBR query, in CaseCBR caseToLook, Dictionary<string, float> weigths);
+}
 public class CaseCBRv2
 {
     // DUDA: PUEDE QUE ACABE HACIENDOLO DYNAMIC, GETTERS Y SETTERS SIN NECESIDAD DE REFLEXIÓN
