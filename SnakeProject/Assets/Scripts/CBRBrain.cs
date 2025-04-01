@@ -18,67 +18,45 @@ public enum reuseAnswerType
 public class CBRBrain
 {
     CaseSerializer caseSerializer; // Va a hacer falta para leer y guardar los archivos
-    Queue<CaseCBR> casesToEvaluate;
-    List<CaseCBR> caseToSave;
-    List<CaseCBR> readedCases;
+    Queue<CaseCBRv2> casesToEvaluate;
+    List<CaseCBRv2> caseToSave;
+    List<CaseCBRv2> readedCases;
 
-    List<Tuple<CaseCBR, float>> possibleTwins;
+    List<CaseCBRv2> possibleTwins;
+    CaseFitness fitness;
+    CaseComparer comparer;
+    Func<System.Object[], bool> myFunc;
+    System.Object[] myFuncArgs;
 
     Dictionary<string, float> weights;
     int kNNRequired;
-    int casesNum;
     bool evaluateNextCase;
-    public CBRBrain(string CSVname, int kNNRequired = 1)
-    {
-        caseToSave = new List<CaseCBR>();
-        readedCases = new List<CaseCBR>();
-        if (File.Exists("CaseBase/" + CSVname)) // Si existe una base de casos, leelos
-        {
-            StreamReader myReader = new StreamReader("CaseBase/" + CSVname);
-            // Lee y parsea los datos a casos
-            readCases(myReader);
-            myReader.Close();
-        }
-        casesNum = readedCases.Count;
+    float similThresh;
 
-        this.kNNRequired = kNNRequired;
-    }
-    #region private
-    /// <summary>
-    /// Se encarga de leer los cases del csv y convertirlos a casos de la logica
+    ///<summary>
+    /// Crea el CBRBrain necesario para funcionar
     /// </summary>
-    /// <param name="myReader">Streamreader para leer</param>
-    private void readCases(StreamReader myReader)
+    /// <param name="CSVname">Nombre de la base de datos</param>
+    /// <param name="myFintess">Funcion para decidir que caso es mejor</param>
+    /// <param name="similarityThreshold">Entre 0 y 1, como de similar tienen que ser los casos para que no se guarden</param>
+    /// <param name="kNNRequired">Numero de casos que se recuperan para la respuesta</param>
+    /// <param name="myComparer">Comparador para decidir como se computa la similiritud de los casos</param>
+    /// <param name="myFunc">Función lambda para la revisión custom. Puede ser null si se va con la por defecto</param>
+    /// <param name="myFuncArgs"> Argumentos necesarios para la función lamda. Puede ser null si esta no los necesita</param>gs">
+    public CBRBrain(string CSVname,float similarityThreshold,CaseComparer myComparer = null, int kNNRequired = 1, CaseFitness myFintess = null,
+         Func<System.Object[], bool> myFunc =null, System.Object[] myFuncArgs = null)
     {
-        string[] variablesTypes = myReader.ReadLine().Split(","); // Primera linea con los nombres y tipos de las variables
-        while (!myReader.EndOfStream)
-        {
-            string[] values = myReader.ReadLine().Split(",");
-            readedCases.Add(CaseUtility.parseCSVToCase(variablesTypes, values));
-        }
+        caseToSave = new List<CaseCBRv2>();
+        readedCases = new List<CaseCBRv2>();
+        caseSerializer = new CaseSerializer();
+        fitness = myFintess;
+        comparer = myComparer;
+        caseSerializer.readCases(CSVname, ref readedCases);
+        this.kNNRequired = kNNRequired;
+        this.similThresh = similarityThreshold;
+        this.myFunc = myFunc;
+        this.myFuncArgs = myFuncArgs;
     }
-    // Esto en caso de que no se borren movimientos antiguos o malos
-    // En otro caso, habria que reescribir el archivo entero o buscar formas de mover el puntero de escritura y borrar esas lineas
-    // pero igual habria que actualizar la id del resto.
-    private void writeCases(string CSVname)
-    {
-        bool existedBefore = true;
-        int id = 0;
-        if (!Directory.Exists("CaseBase")) Directory.CreateDirectory("CaseBase");
-        if (!File.Exists("CaseBase/" + CSVname)) existedBefore = false;
-        else id = casesNum; //Las id de los nuevos casos que no estan escritos
-
-        StreamWriter myWriter = new StreamWriter("CaseBase/" + CSVname, true);
-        if(!existedBefore) myWriter.WriteLine(caseToSave[0].getVariableNames()); //En caso de que no existiese, la primera linea es para nombres
-        foreach (CaseCBR myCase in caseToSave) // Escribe los nuevos casos
-        {
-            myWriter.WriteLine(id+ "," + CaseUtility.parseCaseToCSV(myCase));
-            id++;
-        }
-
-        myWriter.Close();
-    }
-    #endregion
     #region public
     /// <summary>
     /// Añade un valor al peso de una caracteristica y se normaliza
@@ -116,28 +94,29 @@ public class CBRBrain
     /// </summary>
     /// <param name="query">Caso presentado al sistema</param>
     /// <returns>Los kNN casos más prometedores, ordenados de más a menos prometedor</returns>
-    public SortedSet<Tuple<CaseCBR, float>> retrieveKNNCases(in CaseCBR query)
+    public SortedSet<Tuple<CaseCBRv2, float>> retrieveKNNCases(in CaseCBRv2 query)
     {
-        SortedSet<Tuple<CaseCBR, float>> kNNCases = new SortedSet<Tuple<CaseCBR, float>>(new CaseComparer());
-        foreach(CaseCBR myCase in readedCases) 
+        SortedSet<Tuple<CaseCBRv2, float>> kNNCases = new SortedSet<Tuple<CaseCBRv2, float>>(fitness); // Ordenas por fitness
+        foreach(CaseCBRv2 myCase in readedCases) 
         {
+            Tuple<CaseCBRv2, float> myCaseWithSimil = comparer.computeSimilarity(query, myCase, weights);
             if (kNNCases.Count < kNNRequired)
             {
-                kNNCases.Add(CaseUtility.computeSimilarity(query, myCase, weights));
+                kNNCases.Add(myCaseWithSimil);
             }
             else
             {
                 IEnumerator iterator = kNNCases.Reverse().GetEnumerator();
                 iterator.MoveNext(); // El elemento menos parecido o menos valioso
-                Tuple<CaseCBR, float> myCaseWithSimil = CaseUtility.computeSimilarity(query,myCase,weights);
 
                 // Si el nuevo caso visto es mejor que el peor, borra el peor guardado y mete el nuevo
-                if (((Tuple<CaseCBR, float>)iterator.Current).Item2 < myCaseWithSimil.Item2) 
+                if (((Tuple<CaseCBRv2, float>)iterator.Current).Item2 < myCaseWithSimil.Item2) 
                 {
-                    kNNCases.Remove((Tuple<CaseCBR, float>)iterator.Current);
+                    kNNCases.Remove((Tuple<CaseCBRv2, float>)iterator.Current);
                     kNNCases.Add(myCaseWithSimil);
                 }
             }
+            if(myCaseWithSimil.Item2 >= similThresh) possibleTwins.Add(myCaseWithSimil.Item1); // Si son muy parecidos, mira despues
         }
         return kNNCases;
     }
@@ -151,24 +130,24 @@ public class CBRBrain
     /// <param name="knnCases">Los casos más prometedores de los que escoger</param>
     /// <param name="query">El caso presentado que se va a generar</param>
     /// <returns>El resultado a utilizar en el juego</returns>
-    public  T reuseCases <T>(in SortedSet<Tuple<CaseCBR, float>> knnCases, ref CaseCBR query, reuseAnswerType type)
+    public  dynamic reuseCases(in SortedSet<Tuple<CaseCBRv2, float>> knnCases, ref CaseCBRv2 query, reuseAnswerType type)
     {
         
         if(type == reuseAnswerType.mostVoted)
         {
             Dictionary <System.Object, int> votes = new Dictionary<object, int>();
-            Tuple<T, int> answer = null;
-            foreach(Tuple<CaseCBR,float> myCase in knnCases)
+            Tuple<dynamic, int> answer = null;
+            foreach(Tuple<CaseCBRv2, float> myCase in knnCases)
             {
                 if (!votes.ContainsKey(query.getAnswer()))
                 {
                     votes.Add(myCase.Item1.getAnswer(), 1);
-                    if(answer == null) answer = new Tuple<T,int>(myCase.Item1.getAnswer(),1);
+                    if(answer == null) answer = new Tuple<dynamic,int>(myCase.Item1.getAnswer(),1);
                 }
                 else
                 {
                     votes[myCase.Item1.getAnswer()]++;
-                    if(answer.Item2 < votes[myCase.Item1.getAnswer()]) answer = new Tuple<T, int>(myCase.Item1.getAnswer(), 1);
+                    if(answer.Item2 < votes[myCase.Item1.getAnswer()]) answer = new Tuple<dynamic, int>(myCase.Item1.getAnswer(), 1);
                 }
             }
             query.setAnswer(answer.Item1);
@@ -177,19 +156,19 @@ public class CBRBrain
         else if(type == reuseAnswerType.weighted)
         {
             Dictionary<System.Object, int> votes = new Dictionary<object, int>();
-            Tuple<T, int> answer = null;
-            foreach (Tuple<CaseCBR, float> myCase in knnCases)
+            Tuple<dynamic, int> answer = null;
+            foreach (Tuple<CaseCBRv2, float> myCase in knnCases)
             {
                 if (!votes.ContainsKey(query.getAnswer()))
                 {
                     votes.Add(myCase.Item1.getAnswer(), myCase.Item1.getWeight());
-                    if (answer == null) answer = new Tuple<T, int>(myCase.Item1.getAnswer(), myCase.Item1.getWeight());
+                    if (answer == null) answer = new Tuple<dynamic, int>(myCase.Item1.getAnswer(), myCase.Item1.getWeight());
                 }
                 else
                 {
                     votes[myCase.Item1.getAnswer()]+= myCase.Item1.getWeight();
                     if (answer.Item2 < votes[myCase.Item1.getAnswer()]) 
-                        answer = new Tuple<T, int>(myCase.Item1.getAnswer(), votes[myCase.Item1.getAnswer()]);
+                        answer = new Tuple<dynamic, int>(myCase.Item1.getAnswer(), votes[myCase.Item1.getAnswer()]);
                 }
             }
             query.setAnswer(answer.Item1);
@@ -210,16 +189,14 @@ public class CBRBrain
 /// Por defecto, siempre guarda el caso
 /// </summary>
 /// <param name="type">Enumerador indicando el tipo de revisión</param>
-/// <param name="myFunc">Función lambda para la revisión custom. Puede ser null si se va con la por defecto</param>
-/// <param name="args">Argumentos necesarios para la función lamda. Puede ser null si esta no los necesita</param>
 /// <returns></returns>
-    public bool reviseCase(ReviseType type, Func<System.Object[], bool> myFunc = null, System.Object[] args = null)
+    public bool reviseCase(ReviseType type)
     {
         if (type == ReviseType.custom)
         {
             //ERROR: myFunc es null
-            bool save = myFunc(args);
-            if(!save) possibleTwins.Clear(); // Si n o lo vas a guardar, no te interesa saber si ya hay en la base de datos
+            bool save = myFunc(myFuncArgs);
+            if(!save) possibleTwins.Clear(); // Si no lo vas a guardar, no te interesa saber si ya hay en la base de datos
             return save;
         }
         else return true;
@@ -234,10 +211,33 @@ public class CBRBrain
     /// </summary>
     /// <param name="myCase">Caso para guardar</param>
     ///<param name="similarityThreshold">Limite de similaridad con el más parecido para guardar o sumar peso al previo</param>
-    public void retainCases(in CaseCBR myCase, float similarityThreshold)
+    public void retainCases(in CaseCBRv2 myCase)
     {
-        caseToSave.Add(myCase);
-        readedCases.Add(myCase);
+        if (possibleTwins.Count != 0)
+        {
+            bool matchFound = false;
+            int i = 0;
+            while(!matchFound && i < possibleTwins.Count)
+            {
+                if (possibleTwins[i].getAnswer() == myCase.getAnswer()) // Si has encontrado un gemelo, sumale peso en vez de guardarlo
+                {
+                    matchFound = true;
+                    CaseCBRv2 match = readedCases.Find(x => x == possibleTwins[i]);
+                    match.setWeight(match.getWeight()+1);
+                }
+                i++;
+            }
+            if (!matchFound)
+            {
+                caseToSave.Add(myCase);
+                readedCases.Add(myCase);
+            }
+        }
+        else
+        {
+            caseToSave.Add(myCase);
+            readedCases.Add(myCase);
+        }
     }
     #endregion
     /// <summary>
@@ -245,17 +245,17 @@ public class CBRBrain
     /// </summary>
     /// <param name="query"></param>
     /// <returns></returns>
-    public dynamic CBRCycle(CaseCBR query)
+    public dynamic CBRCycle(CaseCBRv2 query)
     {
-        SortedSet<Tuple<CaseCBR,float>> caseSimil = retrieveKNNCases(query);
-        dynamic res = reuseCases(caseSimil, ref query);
+        SortedSet<Tuple<CaseCBRv2, float>> caseSimil = retrieveKNNCases(query);
+        dynamic res = reuseCases(caseSimil, ref query,reuseAnswerType.mostSimilar);
         casesToEvaluate.Enqueue(query);
         if(evaluateNextCase) // TODO: Hacer manejo de errores si no hay más que evaluar
         {
-            CaseCBR caseToEvaluate;
+            CaseCBRv2 caseToEvaluate;
             if(casesToEvaluate.TryDequeue(out caseToEvaluate))
             {
-                if(reviseCase<TIPO DEL COMPARADOR> (caseToEvaluate, COMPARADOR ???))
+                if(reviseCase(caseToEvaluate, COMPARADOR ???))
                 {
                     retainCases(in caseToEvaluate, 0.95f);
                     evaluateNextCase = false;

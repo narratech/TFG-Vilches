@@ -8,28 +8,28 @@ using UnityEngine;
 /// <summary>
 /// Clase que se encarga de comparar dos casos según su similitud con otro para decidir cual es más parecido, de momento
 /// </summary>
-public class CaseComparer : IComparer<Tuple<CaseCBR, float>>
-{
-    // Compara el score del caso y su similitud.
-    public int Compare(Tuple<CaseCBR, float> x, Tuple<CaseCBR, float> y)
-    {
-        //Teniendo en cuenta que un valor optimo medio seria no morir y comer 5 pills (10 pts cada una),
-        //la puntuacion se reduce a 0.0005 para dar un valor que no eclipse a la similitud
-        // El multiplicador del score habria que retocarlo
-        //double actualValueX = x.Item1.getScore() * x.Item1.weight * 0.001 + x.Item2 * 0.8;
-        //double actualValueY = y.Item1.getScore() * y.Item1.weight * 0.001 + y.Item2 * 0.8;
-        double actualValueX = x.Item2;
-        double actualValueY = y.Item2;
-        if (actualValueX > actualValueY)
-        {
-            return -1;
-        }
-        else if (actualValueX < actualValueY)
-        {
-            return 1;
-        }
-        else return 0;
-    }
+//public class CaseComparer : IComparer<Tuple<CaseCBR, float>>
+//{
+//    // Compara el score del caso y su similitud.
+//    public int Compare(Tuple<CaseCBR, float> x, Tuple<CaseCBR, float> y)
+//    {
+//        //Teniendo en cuenta que un valor optimo medio seria no morir y comer 5 pills (10 pts cada una),
+//        //la puntuacion se reduce a 0.0005 para dar un valor que no eclipse a la similitud
+//        // El multiplicador del score habria que retocarlo
+//        //double actualValueX = x.Item1.getScore() * x.Item1.weight * 0.001 + x.Item2 * 0.8;
+//        //double actualValueY = y.Item1.getScore() * y.Item1.weight * 0.001 + y.Item2 * 0.8;
+//        double actualValueX = x.Item2;
+//        double actualValueY = y.Item2;
+//        if (actualValueX > actualValueY)
+//        {
+//            return -1;
+//        }
+//        else if (actualValueX < actualValueY)
+//        {
+//            return 1;
+//        }
+//        else return 0;
+//    }
 }
 // ERROR: Va a hacer falta manejo de errores para indicarle al usuario que hace falta que en su caso haya una variable de nombre
 // answer sí o sí para poder hacer un caso viable

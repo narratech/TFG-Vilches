@@ -5,51 +5,30 @@ using System.Linq;
 using System.Xml.Linq;
 using UnityEngine;
 
-// TODO: Mover cosas de aquí al case serializer
+/// <summary>
+/// Comparador de orden para los casos en la lista de KNN. Es como un Score general del caso (similaritud solo,
+/// mezcla de similaritud y fitness, etc..)
+/// </summary>
+public class CaseFitness : IComparer<Tuple<CaseCBRv2, float>>
+{
+    // Compara el score del caso y su similitud.
+    public virtual int Compare(Tuple<CaseCBRv2, float> x, Tuple<CaseCBRv2, float> y)
+    {
+        double actualValueX = x.Item2;
+        double actualValueY = y.Item2;
+        if (actualValueX > actualValueY)
+        {
+            return -1;
+        }
+        else if (actualValueX < actualValueY)
+        {
+            return 1;
+        }
+        else return 0;
+    }
+}
 public class CaseUtility
 {
-    //Falta guardar respuesta al caso
-    public static CaseCBR serializeCSVToCase(string[] variablesTypes, string[] values)
-    {
-        CaseCBR myCase = new CaseCBR();
-        for (int i = 1; i < values.Length; i++) // Empieza en 1 porque el 0 es la id
-        {
-            string name = variablesTypes[i].Split(":")[0];
-            string type = variablesTypes[i].Split(":")[1];
-            // Se va a encargar el CaseSerializer
-            //    case "Weigth":
-            //        myCase.setWeigth(int.Parse(values[i]));
-            //        break;
-            //}
-        }
-        return myCase;
-    }
-    // Si se va a hacer con la calse dinamica, puedes hacer un delegate que llame a los métodos "get_"+NombreVariable, 
-    // iterando por todos los nombres de variables y hacer un switch para cada tipo con los typeOf (en caso de enums, mirar si se puede con strings, si no, se hara con ints)
-    public static string serializeCaseToCSV(CaseCBR myCase)
-    {
-        string myCaseParsed = "";
-        List<string> variableNames = myCase.getVariableNames();
-        for (int i = 0; i < variableNames.Count; i++) 
-        {
-            string name = variableNames[i].Split(":")[0];
-            string type = variableNames[i].Split(":")[1];
-            switch (type)
-            {
-                // Lo mismo, se va a encargar el CaseSerializer
-                case "Weigth":
-                    {
-                        myCaseParsed += myCase.getWeight();
-                        break;
-                    }
-            }
-            myCaseParsed += ",";
-        }
-        return myCaseParsed;
-
-    }
-
-
     #region VarComparers
     /// <summary>
     /// Se encarga de devolver, siendo 0 nada parecidos y 1 iguales, como de similares son las dos variables

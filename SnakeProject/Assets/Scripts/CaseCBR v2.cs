@@ -6,17 +6,22 @@ using System.Reflection.Emit;
 using UnityEditor.Compilation;
 using UnityEngine;
 
+/// <summary>
+/// Interfaz que se tiene que implementar a gusto del usuario para decidir como quiere comparar sus casos y contabilizar
+/// la similitud (este solo mira similitud)
+/// </summary>
 public interface CaseComparer
 {
     /// <summary>
     /// Interfaz que se tiene que implementar a gusto del usuario para decidir como quiere comparar sus casos y contabilizar
-    /// la similitud
+    /// la similitud (Si quiere contar todo en la similitud o si decide que algun parametro es importante.
+    /// Este resultado determinará el orden de los KNN casos recogidos
     /// </summary>
     /// <param name="query">El caso que se presenta</param>
     /// <param name="caseToLook">El caso a comparar</param>
     /// <param name="weigths">Diccionario con los pesos de cada variable, asignados en el cbrBrain</param>
     /// <returns>La tupla con el caso a comparar y su similitud con el presentado</returns>
-    public abstract Tuple<CaseCBR, float> computeSimilarity(in CaseCBR query, in CaseCBR caseToLook, Dictionary<string, float> weigths);
+    public abstract Tuple<CaseCBRv2, float> computeSimilarity(in CaseCBRv2 query, in CaseCBRv2 caseToLook, Dictionary<string, float> weigths);
 }
 public class CaseCBRv2
 {
@@ -26,7 +31,7 @@ public class CaseCBRv2
 
     Dictionary<string, dynamic> caseProperties;
     dynamic answer = null;
-    int weigth;
+    int weight;
 
     ///// <summary>
     ///// Se encarga de crear la propiedad y sus getters y setters en la clase dinámicamente
@@ -119,13 +124,13 @@ public class CaseCBRv2
     {
         this.answer = answer;
     }
-    public void setWeigth(int weigth)
+    public void setWeight(int weigth)
     {
-        this.weigth = weigth;
+        this.weight = weigth;
     }
-    public int getWeigth()
+    public int getWeight()
     {
-        return weigth;
+        return weight;
     }
     public List<string> getVariableNames()
     {

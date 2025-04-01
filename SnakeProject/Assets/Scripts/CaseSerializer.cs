@@ -1,10 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 
-//TODO: Hacer un serializador interfaz que implemente el readcases y el writeCases
+
 public class CaseSerializer
 {
     #region staticUtility
@@ -71,7 +72,7 @@ public class CaseSerializer
     /// </summary>
     /// <param name="var">Variable que se quiere obtener del string</param>
     /// <param name="type">Tipo de la variable en la que se va a devolver</param>
-    /// <returns></returns>
+    /// <returns>La variable en el tipo correcto</returns>
     public static dynamic unserializeVariable(string var, string type)
     {
         switch (type)
@@ -132,14 +133,100 @@ public class CaseSerializer
                 }
             default:
                 {
+                    // ERROR: A lo mejor devolver un error?
                     return null;
                 }
         }
     }
     #endregion
     #endregion
-    CaseSerializer(string csvName)
+    #region caseSerialzier
+    #region private
+    private List<CaseCBRv2> caseList;
+    private int casesCount;
+    #endregion
+
+    public CaseSerializer()
     {
+        caseList = new List<CaseCBRv2>();
+    }
+    /// <summary>
+    /// Metodo virtual de lectura de casos desde CSV. Tiene por defecto una implementación básica pero para lecturas más complejas
+    /// como enumerators o clases propias, hace falta crear una instancia que herede de esta e implementar el readCases
+    /// </summary>
+    /// <param name="csvName">Nombre del CSV a leer</param>
+    /// <param name="readedCases">Lista de casos en los que guardar los leidos</param>
+    public virtual void readCases(string csvName, ref List<CaseCBRv2> readedCases)
+    {
+        if (File.Exists("CaseBase/" + csvName)) // Si existe una base de casos, leelos
+        {
+            StreamReader myReader = new StreamReader("CaseBase/" + csvName);
+            // Lee y parsea los datos a casos
+            caseList = readedCases;
+            string[] variablesTypes = myReader.ReadLine().Split(","); // Primera linea con los nombres y tipos de las variables
+            while (!myReader.EndOfStream)
+            {
+                string[] values = myReader.ReadLine().Split(",");
+                readedCases.Add(serializeCSVToCase(variablesTypes, values));
+            }
+            myReader.Close();
+        }
+        casesCount = readedCases.Count;
+    }
+
+    public virtual void writeCases(string CSVname, List<CaseCBRv2>caseToSave)
+    {
+        bool existedBefore = true;
+        int id = 0;
+        if (!Directory.Exists("CaseBase")) Directory.CreateDirectory("CaseBase");
+        if (!File.Exists("CaseBase/" + CSVname)) existedBefore = false;
+        else id = casesCount; //Las id de los nuevos casos que no estan escritos
+
+        StreamWriter myWriter = new StreamWriter("CaseBase/" + CSVname, true);
+        if (!existedBefore) myWriter.WriteLine(caseToSave[0].getVariableNames()); //En caso de que no existiese, la primera linea es para nombres
+        foreach (CaseCBRv2 myCase in caseToSave) // Escribe los nuevos casos
+        {
+            myWriter.WriteLine(id + "," + serializeCaseToCSV(myCase));
+            id++;
+        }
+
+        myWriter.Close();
+    }
+    /// <summary>
+    /// Es un método para la lectura de casos por defecto. Genera casos leidos desde csv. 
+    /// Se puede implementar de forma diferente en una clase heredada
+    /// </summary>
+    /// <param name="variablesTypes">Nombre de las variables del caso</param>
+    /// <param name="values">Valores del caso para estas variables</param>
+    /// <returns>El caso formado</returns>
+    public virtual CaseCBRv2 serializeCSVToCase(string[] variablesTypes, string[] values)
+    {
+        //ERROR: Si recibe tipo no soportado, sacar excepcion
+        CaseCBRv2 myCase = new CaseCBRv2();
+        for (int i = 1; i < values.Length; i++) // Empieza en 1 porque el 0 es la id
+        {
+            string name = variablesTypes[i].Split(":")[0];
+            string type = variablesTypes[i].Split(":")[1];
+            if (name != "answer" && name != "weight") myCase.setProperty(name, unserializeVariable(values[i], type));
+            else if (name == "answer") myCase.setAnswer(values[i]);
+            else if (name == "weight") myCase.setWeigth(int.Parse(values[i]));
+        }
+        return myCase;
+    }
+
+    public virtual string serializeCaseToCSV(CaseCBRv2 myCase)
+    {
+        string myCaseParsed = "";
+        List<string> variableNames = myCase.getVariableNames();
+        for (int i = 0; i < variableNames.Count; i++)
+        {
+            string name = variableNames[i].Split(":")[0];
+            string type = variableNames[i].Split(":")[1];
+            myCaseParsed += serializeVariable(myCase.getProperty(name));
+            myCaseParsed += ",";
+        }
+        return myCaseParsed;
 
     }
+    #endregion
 }
