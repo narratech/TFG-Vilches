@@ -367,6 +367,24 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 6551087715323887425, guid: 46d19a388c27a044c84f887bda9bda83, type: 3}
   m_PrefabInstance: {fileID: 1417650136}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &190174912
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 190174910}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c918ec32d837c084284e948a48d9f778, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  myDirection: {x: -1, y: 0, z: 0}
+  playerOne: 0
+  headPartObj: {fileID: 326185110}
+  bodyPartObj: {fileID: 2071755830}
+  tailPartObj: {fileID: 1719943468}
+  speed: 5
 --- !u!1001 &219070353
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -440,6 +458,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6b76a0973a158f94b83e6124072f2c56, type: 3}
+--- !u!1 &326185110 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4821030191672548904, guid: 46d19a388c27a044c84f887bda9bda83, type: 3}
+  m_PrefabInstance: {fileID: 1417650136}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &387818446
 GameObject:
   m_ObjectHideFlags: 0
@@ -14539,7 +14562,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   myDirection: {x: 1, y: 0, z: 0}
-  enemySnake: {fileID: 0}
   playerOne: 1
   headPartObj: {fileID: 1247056509}
   bodyPartObj: {fileID: 1247056508}
@@ -14746,7 +14768,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6551087715323887425, guid: 46d19a388c27a044c84f887bda9bda83, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 190174912}
   m_SourcePrefab: {fileID: 100100000, guid: 46d19a388c27a044c84f887bda9bda83, type: 3}
 --- !u!1 &1460996676
 GameObject:
@@ -15170,6 +15195,16 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!1 &1719943468 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1664739259656926344, guid: 46d19a388c27a044c84f887bda9bda83, type: 3}
+  m_PrefabInstance: {fileID: 1417650136}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &2071755830 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6877403849716376202, guid: 46d19a388c27a044c84f887bda9bda83, type: 3}
+  m_PrefabInstance: {fileID: 1417650136}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

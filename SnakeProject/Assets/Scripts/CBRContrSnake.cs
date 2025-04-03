@@ -1,0 +1,114 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public enum Direction
+{
+    LEFT,RIGHT
+}
+public class myCaseSerializer: CaseSerializer
+{
+    public string serializeVariable(Direction direction)
+    {
+        if (direction == Direction.LEFT) return "left";
+        else if (direction == Direction.RIGHT) return "right";
+        else return "null";
+    }
+    public override dynamic unserializeVariable(string var, string type)
+    {
+        if (type == "diretion")
+        {
+            if (var == "left") return Direction.LEFT;
+            else if (var == "right") return Direction.RIGHT;
+            else return null;
+        }
+        else return base.unserializeVariable(var, type);
+    }
+}
+//Hacer tmb un case comparer que mire el score de la serpiente tras 5 nodos
+
+public class CBRContrSnake : SnakeControl
+{
+    #region private
+    CBRBrain myBrain;
+    myCaseSerializer caseSerializer;
+    int reviseCounter;
+    #endregion
+    // Start is called before the first frame update
+    protected override void Start()
+    {
+        base.Start();
+        caseSerializer = new myCaseSerializer();
+        myBrain = new CBRBrain("Prueba1", 0.95f);
+        myBrain.setCaseSerializer(caseSerializer);
+        reviseCounter = 0;
+    }
+
+    // Update is called once per frame
+    protected override void Update()
+    {
+        if (keepPlaying)
+        {
+            base.Update();
+            HandleInput();
+            if (elapsedTime > 1 / speed)
+            {
+                Move();
+                if (playerOne)
+                {
+                    GameManager.Instance.setPlayer1Positions(snakePositions);
+                    GameManager.Instance.setPlayer1Dir(myDirection);
+                }
+                else
+                {
+                    GameManager.Instance.setPlayer2Positions(snakePositions);
+                    GameManager.Instance.setPlayer2Dir(myDirection);
+                }
+                elapsedTime = 0;
+            }
+            reviseCounter++;
+        }
+    }
+
+    void HandleInput()
+    {
+        Direction myDir = myBrain.CBRCycle(formACase(), (System.Object[] args) => 
+        {
+            System.Random rnd = new System.Random();
+            int xd = rnd.Next(0, 2);
+            if(xd == 0) return Direction.RIGHT;
+            else return Direction.LEFT;
+            
+        });
+        if (myDir == Direction.LEFT)
+        {
+            turnLeft();
+        }
+        else if (myDir == Direction.RIGHT)
+        {
+            turnRigth();
+        }
+        else
+        {
+
+        }
+        if (reviseCounter >= 5) myBrain.setEvaluateNextCase(true);
+
+    }
+
+    CaseCBRv2 formACase()
+    {
+        CaseCBRv2 query = new CaseCBRv2();
+        query.setProperty("position:vector2", headNode);
+        query.setProperty("headDirection:vector3",this.myDirection);
+        query.setProperty("myPartsNodes:vector2List", playerOne? GameManager.Instance.getPlayer1Positions() : 
+            GameManager.Instance.getPlayer2Positions());
+        query.setProperty("otherSnakePartsNode:vector2List", !playerOne ? GameManager.Instance.getPlayer1Positions() :
+            GameManager.Instance.getPlayer2Positions());
+        query.setProperty("otherSnakeDir:vector3", !playerOne ? GameManager.Instance.getPlayer1Dir() :
+           GameManager.Instance.getPlayer2Dir());
+        query.setProperty("fruitPos:vector2", GameManager.Instance.getFruitNode());
+        return query;
+
+    }
+}

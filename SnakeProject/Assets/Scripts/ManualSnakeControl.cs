@@ -21,6 +21,8 @@ public class ManualSnakeControl : SnakeControl
             if (elapsedTime > 1 / speed)
             {
                 Move();
+                if(playerOne)GameManager.Instance.setPlayer1Positions(snakePositions);
+                else GameManager.Instance.setPlayer2Positions(snakePositions);
                 elapsedTime = 0;
             }
         }
@@ -30,27 +32,11 @@ public class ManualSnakeControl : SnakeControl
     {
         if((playerOne && Input.GetKeyDown(KeyCode.A)) || (!playerOne && Input.GetKeyDown(KeyCode.LeftArrow)))
         {
-            int nodeX = 17 + Mathf.RoundToInt(headPart.parte.transform.position.x);
-            int nodeY = 9 - Mathf.RoundToInt(headPart.parte.transform.position.z);
-            //Marcas el siguiente nodo de tu direccion para giro
-            Vector3 newDirect = Quaternion.AngleAxis(-90, Vector3.up) * myDirection;
-            newDirect.x = Mathf.RoundToInt(newDirect.x);
-            newDirect.z = Mathf.RoundToInt(newDirect.z);
-            newDirect = newDirect.normalized;
-            myNodos[nodeX , nodeY].direccion = newDirect;
-            myNodos[nodeX, nodeY].rotationNeeded = -90;
+            turnLeft();
         }
         else if ((playerOne && Input.GetKeyDown(KeyCode.D)) || (!playerOne && Input.GetKeyDown(KeyCode.RightArrow)))
         {
-            int nodeX = 17 + Mathf.RoundToInt(headPart.parte.transform.position.x);
-            int nodeY = 9 - Mathf.RoundToInt(headPart.parte.transform.position.z);
-            //Marcas el siguiente nodo de tu direccion para giro
-            Vector3 newDirect = Quaternion.AngleAxis(90, Vector3.up) * myDirection;
-            newDirect.x = Mathf.RoundToInt(newDirect.x);
-            newDirect.z = Mathf.RoundToInt(newDirect.z);
-            newDirect = newDirect.normalized;
-            myNodos[nodeX, nodeY].direccion = newDirect ;
-            myNodos[nodeX, nodeY].rotationNeeded = 90;
+            turnRigth();
         }
     }
 }

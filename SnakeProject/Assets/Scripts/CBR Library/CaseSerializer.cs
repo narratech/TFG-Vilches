@@ -10,37 +10,40 @@ public class CaseSerializer
 {
     #region staticUtility
     #region serializeVars
-    public static string serializeVariable(float var)
+    // AVISO
+    // Para añadir escritura de tipos no soportados, basta con agregarle un método
+    // serializeVariable(tipo consumido) y la persistencia se hace sola. El formato de serialización debe ser igual que el de deserializacion
+    public virtual string serializeVariable(float var)
     {
         return var.ToString();
     }
-    public static string serializeVariable(bool var)
+    public virtual string serializeVariable(bool var)
     {
         return var.ToString();
     }
-    public static string serializeVariable(List<float> var)
+    public virtual string serializeVariable(List<float> var)
     {
         return string.Join(" ", var);
     }
-    public static string serializeVariable(List<bool> var)
+    public virtual string serializeVariable(List<bool> var)
     {
         return string.Join(" ", var);
     }
-    public static string serializeVariable(Vector2 var)
+    public virtual string serializeVariable(Vector2 var)
     {
         float x = var.x;
         float y = var.y;
 
         return x + "/" + y; ;
     }
-    public static string serializeVariable(Vector3 var)
+    public virtual string serializeVariable(Vector3 var)
     {
         float x = var.x;
         float y = var.y;
         float z = var.z;
         return x + "/" + y + "/" + z;
     }
-    public static string serializeVariable(List<Vector2> var)
+    public virtual string serializeVariable(List<Vector2> var)
     {
         string serVar = "";
         foreach (Vector2 vec in var)
@@ -52,7 +55,7 @@ public class CaseSerializer
 
         return serVar;
     }
-    public static string serializeVariable(List<Vector3> var)
+    public virtual string serializeVariable(List<Vector3> var)
     {
         string serVar = "";
         foreach (Vector3 vec in var)
@@ -68,12 +71,14 @@ public class CaseSerializer
     #endregion
     #region unserializeVars
     /// <summary>
-    /// Devuelve un objeto del tipo y contenido que indicase el string type y el string var
+    /// AVISO
+    /// Devuelve un objeto del tipo y contenido que indicase el string type y el string var. Para tipos no soportados, overridear este metodo
+    /// y el parseo de CSV a caso se hace solo.
     /// </summary>
     /// <param name="var">Variable que se quiere obtener del string</param>
     /// <param name="type">Tipo de la variable en la que se va a devolver</param>
     /// <returns>La variable en el tipo correcto</returns>
-    public static dynamic unserializeVariable(string var, string type)
+    public virtual dynamic unserializeVariable(string var, string type)
     {
         switch (type)
         {
@@ -173,7 +178,12 @@ public class CaseSerializer
         }
         casesCount = readedCases.Count;
     }
-
+    /// <summary>
+    /// Se encarga de escribir los casos al CSV. Para añadir escritura de tipos no soportados, basta con agregarle un método
+    /// serializeVariable(tipo consumido) y la persistencia se hace sola. El formato de serialización debe ser igual que el de deserializacion
+    /// </summary>
+    /// <param name="CSVname"></param>
+    /// <param name="caseToSave"></param>
     public virtual void writeCases(string CSVname, List<CaseCBRv2>caseToSave)
     {
         bool existedBefore = true;
@@ -209,7 +219,8 @@ public class CaseSerializer
             string type = variablesTypes[i].Split(":")[1];
             if (name != "answer" && name != "weight") myCase.setProperty(name, unserializeVariable(values[i], type));
             else if (name == "answer") myCase.setAnswer(values[i]);
-            else if (name == "weight") myCase.setWeigth(int.Parse(values[i]));
+            else if (name == "weight") myCase.setWeight(int.Parse(values[i]));
+            else return null;
         }
         return myCase;
     }

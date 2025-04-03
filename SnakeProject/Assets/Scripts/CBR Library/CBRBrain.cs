@@ -25,6 +25,8 @@ public class CBRBrain
     List<CaseCBRv2> possibleTwins;
     CaseFitness fitness;
     CaseComparer comparer;
+    ReviseType reviseType;
+    reuseAnswerType reuseAnswer;
     Func<System.Object[], bool> myFunc;
     System.Object[] myFuncArgs;
 
@@ -43,12 +45,15 @@ public class CBRBrain
     /// <param name="myComparer">Comparador para decidir como se computa la similiritud de los casos</param>
     /// <param name="myFunc">Función lambda para la revisión custom. Puede ser null si se va con la por defecto</param>
     /// <param name="myFuncArgs"> Argumentos necesarios para la función lamda. Puede ser null si esta no los necesita</param>gs">
-    public CBRBrain(string CSVname,float similarityThreshold,CaseComparer myComparer = null, int kNNRequired = 1, CaseFitness myFintess = null,
-         Func<System.Object[], bool> myFunc =null, System.Object[] myFuncArgs = null)
+    /// <param name="type">Tipo de funcion que se va a usar para revisar el perfomance del caso y si se va a guardar</param>
+    public CBRBrain(string CSVname,float similarityThreshold,reuseAnswerType reuseType = reuseAnswerType.mostSimilar,CaseComparer myComparer = null, int kNNRequired = 1, CaseFitness myFintess = null,
+         Func<System.Object[], bool> myFunc =null,ReviseType type = ReviseType.alwaysRetain, System.Object[] myFuncArgs = null)
     {
         caseToSave = new List<CaseCBRv2>();
         readedCases = new List<CaseCBRv2>();
+        casesToEvaluate = new Queue<CaseCBRv2>();
         caseSerializer = new CaseSerializer();
+        possibleTwins = new List<CaseCBRv2>();
         fitness = myFintess;
         comparer = myComparer;
         caseSerializer.readCases(CSVname, ref readedCases);
@@ -56,6 +61,8 @@ public class CBRBrain
         this.similThresh = similarityThreshold;
         this.myFunc = myFunc;
         this.myFuncArgs = myFuncArgs;
+        this.reviseType = type;
+        this.reuseAnswer = reuseType;
     }
     #region public
     /// <summary>
@@ -85,6 +92,22 @@ public class CBRBrain
     public void setEvaluateNextCase(bool evaluate)
     {
         evaluateNextCase = evaluate;
+    }
+    /// <summary>
+    /// En caso de que el usuario quiera usar su propio serializer
+    /// </summary>
+    /// <param name="caseSerializer">El serializer heredado que se quiere usar</param>
+    public void setCaseSerializer(CaseSerializer caseSerializer)
+    { 
+        this.caseSerializer = caseSerializer;
+    }
+    /// <summary>
+    /// Devuelve el threshold que se utiliza en la CBR, por si se quiere hacer con los modulos por separado
+    /// </summary>
+    /// <returns>El límte de similiritud para que un caso se guarde</returns>
+    public float getSimilThreshold()
+    {
+        return this.similThresh;
     }
     #region CBRModules
 
@@ -130,57 +153,60 @@ public class CBRBrain
     /// <param name="knnCases">Los casos más prometedores de los que escoger</param>
     /// <param name="query">El caso presentado que se va a generar</param>
     /// <returns>El resultado a utilizar en el juego</returns>
-    public  dynamic reuseCases(in SortedSet<Tuple<CaseCBRv2, float>> knnCases, ref CaseCBRv2 query, reuseAnswerType type)
+    public dynamic reuseCases(in SortedSet<Tuple<CaseCBRv2, float>> knnCases, ref CaseCBRv2 query, reuseAnswerType type)
     {
-        
-        if(type == reuseAnswerType.mostVoted)
+        if (knnCases.Count > 0)
         {
-            Dictionary <System.Object, int> votes = new Dictionary<object, int>();
-            Tuple<dynamic, int> answer = null;
-            foreach(Tuple<CaseCBRv2, float> myCase in knnCases)
+            if (type == reuseAnswerType.mostVoted)
             {
-                if (!votes.ContainsKey(query.getAnswer()))
+                Dictionary<System.Object, int> votes = new Dictionary<object, int>();
+                Tuple<dynamic, int> answer = null;
+                foreach (Tuple<CaseCBRv2, float> myCase in knnCases)
                 {
-                    votes.Add(myCase.Item1.getAnswer(), 1);
-                    if(answer == null) answer = new Tuple<dynamic,int>(myCase.Item1.getAnswer(),1);
+                    if (!votes.ContainsKey(query.getAnswer()))
+                    {
+                        votes.Add(myCase.Item1.getAnswer(), 1);
+                        if (answer == null) answer = new Tuple<dynamic, int>(myCase.Item1.getAnswer(), 1);
+                    }
+                    else
+                    {
+                        votes[myCase.Item1.getAnswer()]++;
+                        if (answer.Item2 < votes[myCase.Item1.getAnswer()]) answer = new Tuple<dynamic, int>(myCase.Item1.getAnswer(), 1);
+                    }
                 }
-                else
-                {
-                    votes[myCase.Item1.getAnswer()]++;
-                    if(answer.Item2 < votes[myCase.Item1.getAnswer()]) answer = new Tuple<dynamic, int>(myCase.Item1.getAnswer(), 1);
-                }
+                query.setAnswer(answer.Item1);
+                return answer.Item1;
             }
-            query.setAnswer(answer.Item1);
-            return answer.Item1;
-        }
-        else if(type == reuseAnswerType.weighted)
-        {
-            Dictionary<System.Object, int> votes = new Dictionary<object, int>();
-            Tuple<dynamic, int> answer = null;
-            foreach (Tuple<CaseCBRv2, float> myCase in knnCases)
+            else if (type == reuseAnswerType.weighted)
             {
-                if (!votes.ContainsKey(query.getAnswer()))
+                Dictionary<System.Object, int> votes = new Dictionary<object, int>();
+                Tuple<dynamic, int> answer = null;
+                foreach (Tuple<CaseCBRv2, float> myCase in knnCases)
                 {
-                    votes.Add(myCase.Item1.getAnswer(), myCase.Item1.getWeight());
-                    if (answer == null) answer = new Tuple<dynamic, int>(myCase.Item1.getAnswer(), myCase.Item1.getWeight());
+                    if (!votes.ContainsKey(query.getAnswer()))
+                    {
+                        votes.Add(myCase.Item1.getAnswer(), myCase.Item1.getWeight());
+                        if (answer == null) answer = new Tuple<dynamic, int>(myCase.Item1.getAnswer(), myCase.Item1.getWeight());
+                    }
+                    else
+                    {
+                        votes[myCase.Item1.getAnswer()] += myCase.Item1.getWeight();
+                        if (answer.Item2 < votes[myCase.Item1.getAnswer()])
+                            answer = new Tuple<dynamic, int>(myCase.Item1.getAnswer(), votes[myCase.Item1.getAnswer()]);
+                    }
                 }
-                else
-                {
-                    votes[myCase.Item1.getAnswer()]+= myCase.Item1.getWeight();
-                    if (answer.Item2 < votes[myCase.Item1.getAnswer()]) 
-                        answer = new Tuple<dynamic, int>(myCase.Item1.getAnswer(), votes[myCase.Item1.getAnswer()]);
-                }
+                query.setAnswer(answer.Item1);
+                return answer.Item1;
             }
-            query.setAnswer(answer.Item1);
-            return answer.Item1;
+            else
+            {
+                IEnumerator iterator = knnCases.GetEnumerator();
+                iterator.MoveNext(); // El elemento más prometedor 
+                query.setAnswer(((Tuple<CaseCBR, float>)iterator.Current).Item1.getAnswer());
+                return ((Tuple<CaseCBR, float>)iterator.Current).Item1.getAnswer(); // Supongo que, al ser en tiempo de ejecucion, esto se resolvera solo
+            }
         }
-        else
-        {
-            IEnumerator iterator = knnCases.GetEnumerator();
-            iterator.MoveNext(); // El elemento más prometedor 
-            query.setAnswer(((Tuple<CaseCBR, float>)iterator.Current).Item1.getAnswer());
-            return ((Tuple<CaseCBR, float>)iterator.Current).Item1.getAnswer(); // Supongo que, al ser en tiempo de ejecucion, esto se resolvera solo
-        }
+        else return null;
     }
 // PENDIENTE DE REVISIÓN
 /// <summary>
@@ -241,27 +267,35 @@ public class CBRBrain
     }
     #endregion
     /// <summary>
-    /// Se encarga de hacer el ciclo cbr cada vez que se llama
+    /// Se encarga de hacer el ciclo cbr cada vez que se llama. En caso de no tener un resultado de la base de casos, se ejecuta una fucnion
+    /// implementada por el usuario que debe devolver un resultado(comúmnete, elige un valor resultado al azar, por ejemplo, en pacman, una de las 4 direcciones)
     /// </summary>
-    /// <param name="query"></param>
-    /// <returns></returns>
-    public dynamic CBRCycle(CaseCBRv2 query)
+    /// <param name="query">El caso presentado</param>
+    /// <param name="myFunc">Funcion que realizar en caso de que los casos no presenten una solucion o no haya casos</param>
+    /// <returns>La respuesta a ejecutar</returns>
+    public dynamic CBRCycle(CaseCBRv2 query, Func<System.Object[],dynamic> myFunc, System.Object[]args = null)
     {
         SortedSet<Tuple<CaseCBRv2, float>> caseSimil = retrieveKNNCases(query);
-        dynamic res = reuseCases(caseSimil, ref query,reuseAnswerType.mostSimilar);
+        dynamic res = reuseCases(caseSimil, ref query,reuseAnswer);
+        if (res == null) 
+        {
+            res = myFunc(args);
+            query.setAnswer(res); 
+        }
         casesToEvaluate.Enqueue(query);
-        if(evaluateNextCase) // TODO: Hacer manejo de errores si no hay más que evaluar
+        if(evaluateNextCase) 
         {
             CaseCBRv2 caseToEvaluate;
             if(casesToEvaluate.TryDequeue(out caseToEvaluate))
             {
-                if(reviseCase(caseToEvaluate, COMPARADOR ???))
+                if(reviseCase(reviseType))
                 {
-                    retainCases(in caseToEvaluate, 0.95f);
+                    retainCases(in caseToEvaluate);
                     evaluateNextCase = false;
                 }
             }
         }
+        return res;
     }
     #endregion
 }

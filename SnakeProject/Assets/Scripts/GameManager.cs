@@ -23,10 +23,15 @@ public class GameManager : MonoBehaviour
 
     [SerializeField]
     private GameObject fruit;
+    private Vector2 fruitNode;
     [SerializeField]
     private GameObject player1;
+    private List<Vector2> player1Nodes;
+    private Vector2 player1Dir;
     [SerializeField]
     private GameObject player2;
+    private List<Vector2> player2Nodes;
+    private Vector2 player2Dir;
     [SerializeField]
     private GameObject GuiManager;
 
@@ -63,6 +68,47 @@ public class GameManager : MonoBehaviour
     {
         if (instantiatedFruit == null) InstantiateFruit();
     }
+    #region getters
+    public Vector2 getFruitNode()
+    {
+        return fruitNode;
+    }
+    public List<Vector2> getPlayer1Positions()
+    {
+        return player1Nodes;
+    }
+    public List<Vector2> getPlayer2Positions()
+    {
+        return player2Nodes;
+    }
+    public Vector2 getPlayer1Dir()
+    {
+        return player1Dir;
+    }
+    public Vector2 getPlayer2Dir()
+    {
+        return player2Dir;
+    }
+    #endregion
+    #region setters
+    public void setPlayer1Positions(List<Vector2> positions)
+    {
+         player1Nodes = positions;
+    }
+    public void setPlayer2Positions(List<Vector2> positions)
+    {
+        player2Nodes = positions;
+    }
+    public void setPlayer1Dir(Vector2 dir)
+    {
+        player1Dir = dir;
+    }
+    public void setPlayer2Dir(Vector2 dir)
+    {
+        player2Dir = dir;
+    }
+
+    #endregion
 
     public void InstantiateFruit()
     {
@@ -70,6 +116,7 @@ public class GameManager : MonoBehaviour
         freeNodes.Remove(where);
         instantiatedFruit = Instantiate(fruit, myNodos[Mathf.RoundToInt(where.x), Mathf.RoundToInt(where.y)].centro,Quaternion.identity);
         myNodos[Mathf.RoundToInt(where.x), Mathf.RoundToInt(where.y)].fruitPresent = true;
+        fruitNode = new Vector2(Mathf.RoundToInt(where.x), Mathf.RoundToInt(where.y));
     }
 
 

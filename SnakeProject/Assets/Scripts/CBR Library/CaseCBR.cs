@@ -30,7 +30,7 @@ using UnityEngine;
 //        }
 //        else return 0;
 //    }
-}
+//}
 // ERROR: Va a hacer falta manejo de errores para indicarle al usuario que hace falta que en su caso haya una variable de nombre
 // answer sí o sí para poder hacer un caso viable
 // Otra solución es crear una CLASE QUE HEREDE DE LA CLASE DINÁMICA QUE IMPLEMENTE TANTO EL WEIGHT COMO EL ANSWER (soy un genio)

@@ -96,6 +96,8 @@ public class CaseCBRv2
         //typeBuilder.DefineDefaultConstructor(MethodAttributes.Public | MethodAttributes.SpecialName 
         //    | MethodAttributes.RTSpecialName);
         caseProperties = new Dictionary<string, dynamic>();
+        answer = null;
+        weight = 1;
     }
     /// <summary>
     /// Se encarga de comprobar si esa propiedad ya está creada, creandola si no, y asignandole un valor
