@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,7 +7,7 @@ public enum Direction
 {
     LEFT,RIGHT
 }
-public class myCaseSerializer: CaseSerializer
+class myCaseSerializer: CaseSerializer
 {
     public string serializeVariable(Direction direction)
     {
@@ -26,6 +27,30 @@ public class myCaseSerializer: CaseSerializer
     }
 }
 //Hacer tmb un case comparer que mire el score de la serpiente tras 5 nodos
+class myComparer : CaseComparer
+{
+    public Tuple<CaseCBRv2, float> computeSimilarity(in CaseCBRv2 query, in CaseCBRv2 caseToLook, Dictionary<string, float> weigths)
+    {
+        float maxDistance = (Math.Abs(0 - 30) + Math.Abs(0 - 19));
+        float similarity = 0;
+        similarity += CaseUtility.computeV2ManhattanSimilarity(query.getProperty("position"), 
+           caseToLook.getProperty("position"), maxDistance) * weigths["position"];
+        similarity += CaseUtility.computeV2ManhattanSimilarity(query.getProperty("fruitPos"),
+           caseToLook.getProperty("fruitPos"), maxDistance) * weigths["fruitPos"];
+        similarity += CaseUtility.computeV3ManhattanSimilarity(query.getProperty("headDirection"),
+           caseToLook.getProperty("headDirection"), maxDistance) * weigths["headDirection"];
+        similarity += CaseUtility.computeV2ManhattanSimilarity(query.getProperty("otherSnakeDir"),
+           caseToLook.getProperty("otherSnakeDir"), maxDistance) * weigths["otherSnakeDir"];
+        similarity += CaseUtility.computeV2ListManhattanSimilarity(query.getProperty("myPartsNodes"),
+           caseToLook.getProperty("myPartsNodes"), maxDistance) * weigths["myPartsNodes"];
+        similarity += CaseUtility.computeV2ListManhattanSimilarity(query.getProperty("myPartsNodes"),
+           caseToLook.getProperty("myPartsNodes"), maxDistance) * weigths["myPartsNodes"];
+        similarity += CaseUtility.computeV2ListManhattanSimilarity(query.getProperty("otherSnakePartsNode"),
+          caseToLook.getProperty("otherSnakePartsNode"), maxDistance) * weigths["otherSnakePartsNode"];
+
+        return new Tuple<CaseCBRv2,float>(caseToLook, similarity);
+    }
+}
 
 public class CBRContrSnake : SnakeControl
 {
@@ -39,7 +64,7 @@ public class CBRContrSnake : SnakeControl
     {
         base.Start();
         caseSerializer = new myCaseSerializer();
-        myBrain = new CBRBrain("Prueba1", 0.95f);
+        myBrain = new CBRBrain("Prueba1",new myComparer(),0.95f);
         myBrain.setCaseSerializer(caseSerializer);
         reviseCounter = 0;
     }
@@ -100,14 +125,20 @@ public class CBRContrSnake : SnakeControl
     {
         CaseCBRv2 query = new CaseCBRv2();
         query.setProperty("position:vector2", headNode);
+        myBrain.setWeigth("position", 0.1f);
         query.setProperty("headDirection:vector3",this.myDirection);
+        myBrain.setWeigth("headDirection", 0.15f);
         query.setProperty("myPartsNodes:vector2List", playerOne? GameManager.Instance.getPlayer1Positions() : 
             GameManager.Instance.getPlayer2Positions());
+        myBrain.setWeigth("myPartsNodes", 0.25f);
         query.setProperty("otherSnakePartsNode:vector2List", !playerOne ? GameManager.Instance.getPlayer1Positions() :
             GameManager.Instance.getPlayer2Positions());
-        query.setProperty("otherSnakeDir:vector3", !playerOne ? GameManager.Instance.getPlayer1Dir() :
+        myBrain.setWeigth("otherSnakePartsNode", 0.25f);
+        query.setProperty("otherSnakeDir:vector2", !playerOne ? GameManager.Instance.getPlayer1Dir() :
            GameManager.Instance.getPlayer2Dir());
+        myBrain.setWeigth("otherSnakeDir", 0.15f);
         query.setProperty("fruitPos:vector2", GameManager.Instance.getFruitNode());
+        myBrain.setWeigth("fruitPos", 0.1f);
         return query;
 
     }

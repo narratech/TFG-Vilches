@@ -33,6 +33,7 @@ public class CBRBrain
     Dictionary<string, float> weights;
     int kNNRequired;
     bool evaluateNextCase;
+    bool normalizedWeights;
     float similThresh;
 
     ///<summary>
@@ -46,7 +47,7 @@ public class CBRBrain
     /// <param name="myFunc">Función lambda para la revisión custom. Puede ser null si se va con la por defecto</param>
     /// <param name="myFuncArgs"> Argumentos necesarios para la función lamda. Puede ser null si esta no los necesita</param>gs">
     /// <param name="type">Tipo de funcion que se va a usar para revisar el perfomance del caso y si se va a guardar</param>
-    public CBRBrain(string CSVname,float similarityThreshold,reuseAnswerType reuseType = reuseAnswerType.mostSimilar,CaseComparer myComparer = null, int kNNRequired = 1, CaseFitness myFintess = null,
+    public CBRBrain(string CSVname,CaseComparer myComparer = null, float similarityThreshold = 0, reuseAnswerType reuseType = reuseAnswerType.mostSimilar, int kNNRequired = 1, CaseFitness myFintess = null,
          Func<System.Object[], bool> myFunc =null,ReviseType type = ReviseType.alwaysRetain, System.Object[] myFuncArgs = null)
     {
         caseToSave = new List<CaseCBRv2>();
@@ -54,6 +55,7 @@ public class CBRBrain
         casesToEvaluate = new Queue<CaseCBRv2>();
         caseSerializer = new CaseSerializer();
         possibleTwins = new List<CaseCBRv2>();
+        this.weights = new Dictionary<string, float>();
         fitness = myFintess;
         comparer = myComparer;
         caseSerializer.readCases(CSVname, ref readedCases);
@@ -63,6 +65,7 @@ public class CBRBrain
         this.myFuncArgs = myFuncArgs;
         this.reviseType = type;
         this.reuseAnswer = reuseType;
+        this.normalizedWeights = false;
     }
     #region public
     /// <summary>
@@ -73,17 +76,6 @@ public class CBRBrain
     public void setWeigth(string key, float w)
     {
         weights[key] = w;
-        float sum = 0;
-        Dictionary<string,float>.Enumerator it = weights.GetEnumerator();
-        while (it.MoveNext())
-        {
-            sum += it.Current.Value;
-        }
-        it = weights.GetEnumerator();
-        while (it.MoveNext())
-        {
-            weights[it.Current.Key] = weights[it.Current.Key] / sum; // Se normalizan los pesos
-        }
     }
     /// <summary>
     /// Se llama cuando el usuario considere que se tiene que evaluar el siguiente caso de la cola de evaluacion
@@ -108,6 +100,26 @@ public class CBRBrain
     public float getSimilThreshold()
     {
         return this.similThresh;
+    }
+    public Dictionary<string, float> getPropertiesWeigth()
+    {
+        return weights;
+    }
+    protected void normalizeWeights()
+    {
+        float sum = 0;
+        Dictionary<string, float>.Enumerator it = weights.GetEnumerator();
+        while (it.MoveNext())
+        {
+            sum += it.Current.Value;
+        }
+        it = weights.GetEnumerator();
+        Dictionary<string, float> newWeights = new Dictionary<string, float>();
+        while (it.MoveNext())
+        {
+            newWeights[it.Current.Key] = weights[it.Current.Key] / sum; // Se normalizan los pesos
+        }
+        weights = newWeights;
     }
     #region CBRModules
 
@@ -139,7 +151,7 @@ public class CBRBrain
                     kNNCases.Add(myCaseWithSimil);
                 }
             }
-            if(myCaseWithSimil.Item2 >= similThresh) possibleTwins.Add(myCaseWithSimil.Item1); // Si son muy parecidos, mira despues
+            if(similThresh > 0 && myCaseWithSimil.Item2 >= similThresh) possibleTwins.Add(myCaseWithSimil.Item1); // Si son muy parecidos, mira despues
         }
         return kNNCases;
     }
@@ -275,6 +287,11 @@ public class CBRBrain
     /// <returns>La respuesta a ejecutar</returns>
     public dynamic CBRCycle(CaseCBRv2 query, Func<System.Object[],dynamic> myFunc, System.Object[]args = null)
     {
+        if(!normalizedWeights)
+        {
+            normalizeWeights();
+            normalizedWeights = true;
+        }
         SortedSet<Tuple<CaseCBRv2, float>> caseSimil = retrieveKNNCases(query);
         dynamic res = reuseCases(caseSimil, ref query,reuseAnswer);
         if (res == null) 

@@ -30,6 +30,7 @@ public class CaseCBRv2
     dynamic myRealCase; // La instancia de la nueva clase
 
     Dictionary<string, dynamic> caseProperties;
+    Dictionary<string, string> propertyTypes;
     dynamic answer = null;
     int weight;
 
@@ -96,6 +97,7 @@ public class CaseCBRv2
         //typeBuilder.DefineDefaultConstructor(MethodAttributes.Public | MethodAttributes.SpecialName 
         //    | MethodAttributes.RTSpecialName);
         caseProperties = new Dictionary<string, dynamic>();
+        propertyTypes = new Dictionary<string, string>();
         answer = null;
         weight = 1;
     }
@@ -110,7 +112,9 @@ public class CaseCBRv2
         //{
         //    CreateProperty(name, value.GetType());
         //}
-        caseProperties[name] = value;
+        string[] separation = name.Split(":");
+        caseProperties[separation[0]] = value;
+        propertyTypes[separation[0]] = separation[1];
     }
 
     public dynamic getProperty(string name)
@@ -137,7 +141,7 @@ public class CaseCBRv2
     public List<string> getVariableNames()
     {
         List<string> names = new List<string>();
-        foreach (string name in caseProperties.Keys) names.Add(name);
+        foreach (string name in caseProperties.Keys) names.Add(name + ":" + propertyTypes[name]);
         return names;
     }
 }
