@@ -646,3 +646,4 @@ crashlytics-build.properties
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudio,unity,csharp
 
+SnakeProject/Library/PackageCache/com.unity.burst@1.8.16/.Runtime/libburst-llvm-16.dylib
