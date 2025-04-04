@@ -74,6 +74,22 @@ public class SnakeControl : MonoBehaviour
         }
         growthNeeded = false;
         keepPlaying = true;
+
+        int X = 17 + Mathf.RoundToInt(headPart.parte.transform.position.x); // Para que no se cambie la direccion hasta haber alcanzado el nodo
+        int Y = 9 - Mathf.RoundToInt(headPart.parte.transform.position.z);
+        snakePositions.Add(new Vector2(X, Y));
+        for (int i = 0; i < bodyParts.Count; i++)
+        {
+            X = 17 + Mathf.RoundToInt(bodyParts[i].parte.transform.position.x);
+            Y = 9 - Mathf.RoundToInt(bodyParts[i].parte.transform.position.z);
+            snakePositions.Add(new Vector2(X, Y));
+        }
+        X = 17 + Mathf.RoundToInt(tailPart.parte.transform.position.x);
+        Y = 9 - Mathf.RoundToInt(tailPart.parte.transform.position.z);
+        snakePositions.Add(new Vector2(X, Y));
+        if(playerOne)GameManager.Instance.setPlayer1Positions(snakePositions);
+        else GameManager.Instance.setPlayer2Positions(snakePositions);
+
     }
 
     // Update is called once per frame
@@ -110,7 +126,7 @@ public class SnakeControl : MonoBehaviour
     /// </summary>
     protected void Move()
     {
-        
+        snakePositions.Clear();
         int nodeX = 17 + Mathf.RoundToInt(headPart.parte.transform.position.x); // Para que no se cambie la direccion hasta haber alcanzado el nodo
         int nodeY = 9 - Mathf.RoundToInt(headPart.parte.transform.position.z);
         // Te mueves en la direccion que diga ese nodo si es diferente a tu dirección

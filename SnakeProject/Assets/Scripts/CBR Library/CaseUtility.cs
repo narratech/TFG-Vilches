@@ -121,7 +121,7 @@ public class CaseUtility
         float disparity = 0;
         for (int i = 0; i < query.Count; i++)
         {
-            disparity += 1 - ((Math.Abs(query[i].x - caseToLook[i].x) + Math.Abs(query[i].y - caseToLook[i].y)) / range)/query.Count;
+            disparity += (1 - ((Math.Abs(query[i].x - caseToLook[i].x) + Math.Abs(query[i].y - caseToLook[i].y)) / range))/query.Count;
         }
         return 1 - disparity;
     }
@@ -137,7 +137,7 @@ public class CaseUtility
         float disparity = 0;
         for (int i = 0; i < query.Count; i++)
         {
-            disparity += 1- (((float)Math.Sqrt((float)Math.Pow(query[i].x - caseToLook[i].x, 2) + (float)Math.Pow(query[i].y - caseToLook[i].y, 2))) / range)/query.Count;
+            disparity += (1 - (((float)Math.Sqrt((float)Math.Pow(query[i].x - caseToLook[i].x, 2) + (float)Math.Pow(query[i].y - caseToLook[i].y, 2))) / range)) / query.Count;
         }
         return 1 - disparity;
     }
@@ -180,8 +180,8 @@ public class CaseUtility
         float disparity = 0;
         for (int i = 0; i < query.Count; i++)
         {
-            disparity += 1 - ((Math.Abs(query[i].x - caseToLook[i].x) + 
-                Math.Abs(query[i].y - caseToLook[i].y) + Math.Abs(query[i].z - caseToLook[i].z)) / range) / query.Count;
+            disparity += (1 - ((Math.Abs(query[i].x - caseToLook[i].x) + 
+                Math.Abs(query[i].y - caseToLook[i].y) + Math.Abs(query[i].z - caseToLook[i].z)) / range)) / query.Count;
         }
         return 1 - disparity;
     }
@@ -197,8 +197,8 @@ public class CaseUtility
         float disparity = 0;
         for (int i = 0; i < query.Count; i++)
         {
-            disparity += 1 - (((float)Math.Sqrt((float)Math.Pow(query[i].x - caseToLook[i].x, 2) + 
-                (float)Math.Pow(query[i].y - caseToLook[i].y, 2)+(float)Math.Pow(query[i].z - caseToLook[i].z,2) / range))) / query.Count;
+            disparity += (1 - (((float)Math.Sqrt((float)Math.Pow(query[i].x - caseToLook[i].x, 2) + 
+                (float)Math.Pow(query[i].y - caseToLook[i].y, 2)+(float)Math.Pow(query[i].z - caseToLook[i].z,2) / range)))) / query.Count;
         }
         return 1 - disparity;
     }

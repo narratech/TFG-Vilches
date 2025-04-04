@@ -163,9 +163,9 @@ public class CaseSerializer
     /// <param name="readedCases">Lista de casos en los que guardar los leidos</param>
     public virtual void readCases(string csvName, ref List<CaseCBRv2> readedCases)
     {
-        if (File.Exists("CaseBase/" + csvName)) // Si existe una base de casos, leelos
+        if (File.Exists("CaseBase/" + csvName+".csv")) // Si existe una base de casos, leelos
         {
-            StreamReader myReader = new StreamReader("CaseBase/" + csvName);
+            StreamReader myReader = new StreamReader("CaseBase/" + csvName+".csv");
             // Lee y parsea los datos a casos
             caseList = readedCases;
             string[] variablesTypes = myReader.ReadLine().Split(","); // Primera linea con los nombres y tipos de las variables
@@ -189,11 +189,11 @@ public class CaseSerializer
         bool existedBefore = true;
         int id = 0;
         if (!Directory.Exists("CaseBase")) Directory.CreateDirectory("CaseBase");
-        if (!File.Exists("CaseBase/" + CSVname)) existedBefore = false;
+        if (!File.Exists("CaseBase/" + CSVname +".csv")) existedBefore = false;
         else id = casesCount; //Las id de los nuevos casos que no estan escritos
 
-        StreamWriter myWriter = new StreamWriter("CaseBase/" + CSVname, true);
-        if (!existedBefore) myWriter.WriteLine(caseToSave[0].getVariableNames()); //En caso de que no existiese, la primera linea es para nombres
+        StreamWriter myWriter = new StreamWriter("CaseBase/" + CSVname + ".csv", true);
+        if (!existedBefore) myWriter.WriteLine(string.Join(",", caseToSave[0].getVariableNames())); //En caso de que no existiese, la primera linea es para nombres
         foreach (CaseCBRv2 myCase in caseToSave) // Escribe los nuevos casos
         {
             myWriter.WriteLine(id + "," + serializeCaseToCSV(myCase));

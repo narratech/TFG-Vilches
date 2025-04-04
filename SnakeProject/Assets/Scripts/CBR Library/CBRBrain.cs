@@ -35,6 +35,7 @@ public class CBRBrain
     bool evaluateNextCase;
     bool normalizedWeights;
     float similThresh;
+    string CSVname;
 
     ///<summary>
     /// Crea el CBRBrain necesario para funcionar
@@ -58,6 +59,7 @@ public class CBRBrain
         this.weights = new Dictionary<string, float>();
         fitness = myFintess;
         comparer = myComparer;
+        this.CSVname = CSVname;
         caseSerializer.readCases(CSVname, ref readedCases);
         this.kNNRequired = kNNRequired;
         this.similThresh = similarityThreshold;
@@ -214,8 +216,8 @@ public class CBRBrain
             {
                 IEnumerator iterator = knnCases.GetEnumerator();
                 iterator.MoveNext(); // El elemento más prometedor 
-                query.setAnswer(((Tuple<CaseCBR, float>)iterator.Current).Item1.getAnswer());
-                return ((Tuple<CaseCBR, float>)iterator.Current).Item1.getAnswer(); // Supongo que, al ser en tiempo de ejecucion, esto se resolvera solo
+                query.setAnswer(((Tuple<CaseCBRv2, float>)iterator.Current).Item1.getAnswer());
+                return ((Tuple<CaseCBRv2, float>)iterator.Current).Item1.getAnswer(); // Supongo que, al ser en tiempo de ejecucion, esto se resolvera solo
             }
         }
         else return null;
@@ -313,6 +315,10 @@ public class CBRBrain
             }
         }
         return res;
+    }
+    public void persistCases()
+    {
+        caseSerializer.writeCases(CSVname, caseToSave);
     }
     #endregion
 }

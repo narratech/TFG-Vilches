@@ -75,9 +75,10 @@ public class CBRContrSnake : SnakeControl
         if (keepPlaying)
         {
             base.Update();
-            HandleInput();
+            if (Input.GetKeyDown(KeyCode.G)) myBrain.persistCases();
             if (elapsedTime > 1 / speed)
             {
+                HandleInput();
                 Move();
                 if (playerOne)
                 {
@@ -90,8 +91,8 @@ public class CBRContrSnake : SnakeControl
                     GameManager.Instance.setPlayer2Dir(myDirection);
                 }
                 elapsedTime = 0;
+                reviseCounter++;
             }
-            reviseCounter++;
         }
     }
 
@@ -117,7 +118,7 @@ public class CBRContrSnake : SnakeControl
         {
 
         }
-        if (reviseCounter >= 5) myBrain.setEvaluateNextCase(true);
+        if (reviseCounter >= 3) myBrain.setEvaluateNextCase(true);
 
     }
 
