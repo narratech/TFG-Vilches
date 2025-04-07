@@ -37,6 +37,8 @@ public class GameManager : MonoBehaviour
 
     private GameObject instantiatedFruit;
 
+    private bool keepPlaying;
+
     private void Awake()
     {
         if(Instance == null) Instance = this;
@@ -61,6 +63,7 @@ public class GameManager : MonoBehaviour
             }
         }
         instantiatedFruit = null;
+        keepPlaying = true;
     }
 
     // Update is called once per frame
@@ -148,13 +151,16 @@ public class GameManager : MonoBehaviour
 
     public void lostGame(bool isPlayerOne)
     {
-        player1.GetComponent<SnakeControl>().setKeepPlaying(false); // Para la ejecución de ambos
-        //player2.GetComponent<SnakeControl>().setKeepPlaying(false);
+        keepPlaying = false;
         GuiManager.GetComponent<GUIManager>().ShowWinText(!isPlayerOne); // Gana el que no pierde, facil :D
     }
     public void OnRetryReset()
     {
         UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(0);
         UnityEngine.SceneManagement.SceneManager.LoadScene(0); // Recarga la escena
+    }
+    public bool getKeepPlaying()
+    {
+        return keepPlaying;
     }
 }

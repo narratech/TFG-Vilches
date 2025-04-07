@@ -193,7 +193,11 @@ public class CaseSerializer
         else id = casesCount; //Las id de los nuevos casos que no estan escritos
 
         StreamWriter myWriter = new StreamWriter("CaseBase/" + CSVname + ".csv", true);
-        if (!existedBefore) myWriter.WriteLine(string.Join(",", caseToSave[0].getVariableNames())); //En caso de que no existiese, la primera linea es para nombres
+        if (!existedBefore)
+        {
+            string names = "id," + string.Join(",", caseToSave[0].getVariableNames());
+            myWriter.WriteLine(names); //En caso de que no existiese, la primera linea es para nombres
+        }
         foreach (CaseCBRv2 myCase in caseToSave) // Escribe los nuevos casos
         {
             myWriter.WriteLine(id + "," + serializeCaseToCSV(myCase));

@@ -72,24 +72,25 @@ public class CBRContrSnake : SnakeControl
     // Update is called once per frame
     protected override void Update()
     {
-        if (keepPlaying)
+        if (GameManager.Instance.getKeepPlaying())
         {
             base.Update();
             if (Input.GetKeyDown(KeyCode.G)) myBrain.persistCases();
             if (elapsedTime > 1 / speed)
             {
-                HandleInput();
-                Move();
+                
                 if (playerOne)
                 {
                     GameManager.Instance.setPlayer1Positions(snakePositions);
-                    GameManager.Instance.setPlayer1Dir(myDirection);
+                    GameManager.Instance.setPlayer1Dir(new Vector2(myDirection.x, myDirection.z));
                 }
                 else
                 {
                     GameManager.Instance.setPlayer2Positions(snakePositions);
-                    GameManager.Instance.setPlayer2Dir(myDirection);
+                    GameManager.Instance.setPlayer2Dir(new Vector2(myDirection.x,myDirection.z));
                 }
+                HandleInput();
+                Move();
                 elapsedTime = 0;
                 reviseCounter++;
             }
@@ -129,14 +130,25 @@ public class CBRContrSnake : SnakeControl
         myBrain.setWeigth("position", 0.1f);
         query.setProperty("headDirection:vector3",this.myDirection);
         myBrain.setWeigth("headDirection", 0.15f);
-        query.setProperty("myPartsNodes:vector2List", playerOne? GameManager.Instance.getPlayer1Positions() : 
-            GameManager.Instance.getPlayer2Positions());
+        if(playerOne)
+        {
+            List<Vector2>myList = new List<Vector2>(GameManager.Instance.getPlayer1Positions());
+            query.setProperty("myPartsNodes:vector2List", myList);
+            List<Vector2>myList2 = new List<Vector2>(GameManager.Instance.getPlayer2Positions());
+            query.setProperty("otherSnakePartsNode:vector2List", myList2);
+            query.setProperty("otherSnakeDir:vector2", GameManager.Instance.getPlayer2Dir());
+        }
+        else
+        {
+            List<Vector2> myList = new List<Vector2>(GameManager.Instance.getPlayer2Positions());
+            query.setProperty("myPartsNodes:vector2List", myList);
+            List<Vector2> myList2 = new List<Vector2>(GameManager.Instance.getPlayer1Positions());
+            query.setProperty("otherSnakePartsNode:vector2List", myList2);
+            query.setProperty("otherSnakeDir:vector2", GameManager.Instance.getPlayer1Dir());
+        }
+        
         myBrain.setWeigth("myPartsNodes", 0.25f);
-        query.setProperty("otherSnakePartsNode:vector2List", !playerOne ? GameManager.Instance.getPlayer1Positions() :
-            GameManager.Instance.getPlayer2Positions());
         myBrain.setWeigth("otherSnakePartsNode", 0.25f);
-        query.setProperty("otherSnakeDir:vector2", !playerOne ? GameManager.Instance.getPlayer1Dir() :
-           GameManager.Instance.getPlayer2Dir());
         myBrain.setWeigth("otherSnakeDir", 0.15f);
         query.setProperty("fruitPos:vector2", GameManager.Instance.getFruitNode());
         myBrain.setWeigth("fruitPos", 0.1f);

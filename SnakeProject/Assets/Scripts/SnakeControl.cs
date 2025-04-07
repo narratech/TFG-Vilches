@@ -46,7 +46,6 @@ public class SnakeControl : MonoBehaviour
     protected GameObject tailPartObj;
     [SerializeField]
     protected float speed;
-    protected bool keepPlaying;
     protected List<Vector2> snakePositions;
 
 
@@ -73,7 +72,6 @@ public class SnakeControl : MonoBehaviour
             }
         }
         growthNeeded = false;
-        keepPlaying = true;
 
         int X = 17 + Mathf.RoundToInt(headPart.parte.transform.position.x); // Para que no se cambie la direccion hasta haber alcanzado el nodo
         int Y = 9 - Mathf.RoundToInt(headPart.parte.transform.position.z);
@@ -115,10 +113,6 @@ public class SnakeControl : MonoBehaviour
     {
         return 10 + Mathf.RoundToInt(xPos); // La y total mide 8 nodos empezando en 4
     }
-    public void setKeepPlaying(bool keepPlay)
-    {
-        keepPlaying = keepPlay;
-    }
 
     /// <summary>
     /// Se encarga de mover cada parte del cuerpo de la serpiente segun pasa por los nodos y, si necesita cambiar la direccion,
@@ -141,10 +135,10 @@ public class SnakeControl : MonoBehaviour
         }
         // Movimiento discreto mejor, por nodos, no continuo con delta.
         headPart.parte.transform.position = myNodos[nodeX + Mathf.RoundToInt(headPart.direccion.x), nodeY - Mathf.RoundToInt(headPart.direccion.z)].centro;
-        Vector2 pos = new Vector2(myNodos[nodeX + Mathf.RoundToInt(headPart.direccion.x), nodeY - Mathf.RoundToInt(headPart.direccion.z)].centro.x,
-            myNodos[nodeX + Mathf.RoundToInt(headPart.direccion.x), nodeY - Mathf.RoundToInt(headPart.direccion.z)].centro.z);
-        snakePositions.Add(pos);
-        headNode = pos;
+        nodeX = 17 + Mathf.RoundToInt(headPart.parte.transform.position.x);
+        nodeY = 9 - Mathf.RoundToInt(headPart.parte.transform.position.z);
+        snakePositions.Add(new Vector2(nodeX, nodeY));
+        headNode = new Vector2(nodeX,nodeY);
 
             GameManager.Instance.occupieNode(nodeX + Mathf.RoundToInt(headPart.direccion.x), nodeY - Mathf.RoundToInt(headPart.direccion.z));
 
@@ -176,10 +170,10 @@ public class SnakeControl : MonoBehaviour
                 myPart.parte.transform.position = myNodos[nodeX + Mathf.RoundToInt(myPart.direccion.x), nodeY - Mathf.RoundToInt(myPart.direccion.z)].centro;
                 GameManager.Instance.occupieNode(nodeX + Mathf.RoundToInt(myPart.direccion.x), nodeY - Mathf.RoundToInt(myPart.direccion.z));
                 bodyParts[i] = myPart;
-                pos = new Vector2(myNodos[nodeX + Mathf.RoundToInt(myPart.direccion.x), nodeY - Mathf.RoundToInt(myPart.direccion.z)].centro.x,
-                myNodos[nodeX + Mathf.RoundToInt(myPart.direccion.x), nodeY - Mathf.RoundToInt(myPart.direccion.z)].centro.z);
-                snakePositions.Add(pos);
-            }
+            nodeX = 17 + Mathf.RoundToInt(myPart.parte.transform.position.x);
+            nodeY = 9 - Mathf.RoundToInt(myPart.parte.transform.position.z);
+            snakePositions.Add(new Vector2(nodeX, nodeY));
+        }
             nodeX = 17 + Mathf.RoundToInt(tailPart.parte.transform.position.x);
             nodeY = 9 - Mathf.RoundToInt(tailPart.parte.transform.position.z);
             // Para que no gire sin parar en el mismo nodo
@@ -198,9 +192,9 @@ public class SnakeControl : MonoBehaviour
 
                 tailPart.parte.transform.position = myNodos[nodeX + Mathf.RoundToInt(tailPart.direccion.x), nodeY - Mathf.RoundToInt(tailPart.direccion.z)].centro;
                 GameManager.Instance.occupieNode(nodeX + Mathf.RoundToInt(tailPart.direccion.x), nodeY - Mathf.RoundToInt(tailPart.direccion.z));
-                pos = new Vector2(myNodos[nodeX + Mathf.RoundToInt(tailPart.direccion.x), nodeY - Mathf.RoundToInt(tailPart.direccion.z)].centro.x,
-                myNodos[nodeX + Mathf.RoundToInt(tailPart.direccion.x), nodeY - Mathf.RoundToInt(tailPart.direccion.z)].centro.z);
-                snakePositions.Add(pos);
+                nodeX = 17 + Mathf.RoundToInt(tailPart.parte.transform.position.x);
+                nodeY = 9 - Mathf.RoundToInt(tailPart.parte.transform.position.z);
+                snakePositions.Add(new Vector2(nodeX, nodeY));
 
                 GameManager.Instance.deOccupieNode(nodeX, nodeY); // Si la cola pasa, hay que desocupar el nodo, no queda más serpiente.
 

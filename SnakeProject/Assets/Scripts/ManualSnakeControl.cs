@@ -14,15 +14,23 @@ public class ManualSnakeControl : SnakeControl
     // Update is called once per frame
     protected override void Update()
     {
-        if (keepPlaying)
+        if (GameManager.Instance.getKeepPlaying())
         {
             base.Update();
             HandleInput();
             if (elapsedTime > 1 / speed)
             {
                 Move();
-                if(playerOne)GameManager.Instance.setPlayer1Positions(snakePositions);
-                else GameManager.Instance.setPlayer2Positions(snakePositions);
+                if (playerOne)
+                {
+                    GameManager.Instance.setPlayer1Positions(snakePositions);
+                    GameManager.Instance.setPlayer1Dir(new Vector2(myDirection.x, myDirection.z));
+                }
+                else
+                {
+                    GameManager.Instance.setPlayer2Positions(snakePositions);
+                    GameManager.Instance.setPlayer2Dir(new Vector2(myDirection.x, myDirection.z));
+                }
                 elapsedTime = 0;
             }
         }
