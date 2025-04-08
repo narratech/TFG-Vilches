@@ -8,7 +8,6 @@ using UnityEngine;
 
 public class CaseSerializer
 {
-    #region staticUtility
     #region serializeVars
     // AVISO
     // Para añadir escritura de tipos no soportados, basta con agregarle un método
@@ -143,7 +142,6 @@ public class CaseSerializer
                 }
         }
     }
-    #endregion
     #endregion
     #region caseSerialzier
     #region private

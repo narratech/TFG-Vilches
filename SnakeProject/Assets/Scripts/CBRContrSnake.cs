@@ -13,11 +13,11 @@ class myCaseSerializer: CaseSerializer
     {
         if (direction == Direction.LEFT) return "left";
         else if (direction == Direction.RIGHT) return "right";
-        else return "null";
+        else return "recto";
     }
     public override dynamic unserializeVariable(string var, string type)
     {
-        if (type == "diretion")
+        if (type == "direction")
         {
             if (var == "left") return Direction.LEFT;
             else if (var == "right") return Direction.RIGHT;
@@ -126,6 +126,7 @@ public class CBRContrSnake : SnakeControl
     CaseCBRv2 formACase()
     {
         CaseCBRv2 query = new CaseCBRv2();
+        query.setAnswerType("direction");
         query.setProperty("position:vector2", headNode);
         myBrain.setWeigth("position", 0.1f);
         query.setProperty("headDirection:vector3",this.myDirection);

@@ -100,6 +100,10 @@ public class CaseCBRv2
         propertyTypes = new Dictionary<string, string>();
         answer = null;
         weight = 1;
+        caseProperties["weight"] = 1;
+        propertyTypes["weight"] = "float";
+        caseProperties["answer"] = null;
+        propertyTypes["answer"] = null; // ERROR: Si no has hecho el setType previo
     }
     /// <summary>
     /// Se encarga de comprobar si esa propiedad ya está creada, creandola si no, y asignandole un valor
@@ -126,13 +130,24 @@ public class CaseCBRv2
     {
         return answer;
     }
+    /// <summary>
+    /// Añade de que tipo es la respuesta para luego serialiazarla y deserializarla.
+    /// El nombre tiene que coincidir con el escrito en los nuevos unserialize y deserialize
+    /// </summary>
+    /// <param name="nameType">String con el nombre del tipo de la respuesta</param>
+    public void setAnswerType(string nameType)
+    {
+        this.propertyTypes["answer"] = nameType;
+    }
     public void setAnswer(dynamic answer)
     {
         this.answer = answer;
+        this.caseProperties["answer"] = answer;
     }
     public void setWeight(int weigth)
     {
         this.weight = weigth;
+        this.caseProperties["weight"] = (float)weight;
     }
     public int getWeight()
     {
