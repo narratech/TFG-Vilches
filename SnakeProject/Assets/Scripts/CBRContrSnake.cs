@@ -9,11 +9,18 @@ public enum Direction
 }
 class myCaseSerializer: CaseSerializer
 {
-    public string serializeVariable(Direction direction)
+    public override string serializeVariable(dynamic var)
     {
-        if (direction == Direction.LEFT) return "left";
-        else if (direction == Direction.RIGHT) return "right";
-        else return "recto";
+        if (var.GetType() == typeof(Direction))
+        {
+            if (var == Direction.LEFT) return "left";
+            else if (var == Direction.RIGHT) return "right";
+            else return "recto";
+        }
+        else
+        {
+            return base.serializeVariable((object)var);
+        }
     }
     public override dynamic unserializeVariable(string var, string type)
     {

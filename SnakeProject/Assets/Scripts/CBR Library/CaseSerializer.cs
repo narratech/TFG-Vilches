@@ -12,60 +12,68 @@ public class CaseSerializer
     // AVISO
     // Para añadir escritura de tipos no soportados, basta con agregarle un método
     // serializeVariable(tipo consumido) y la persistencia se hace sola. El formato de serialización debe ser igual que el de deserializacion
-    public virtual string serializeVariable(float var)
+    public virtual string serializeVariable(dynamic var)
     {
-        return var.ToString();
-    }
-    public virtual string serializeVariable(bool var)
-    {
-        return var.ToString();
-    }
-    public virtual string serializeVariable(List<float> var)
-    {
-        return string.Join(" ", var);
-    }
-    public virtual string serializeVariable(List<bool> var)
-    {
-        return string.Join(" ", var);
-    }
-    public virtual string serializeVariable(Vector2 var)
-    {
-        float x = var.x;
-        float y = var.y;
+        Type tipo = var.GetType();
 
-        return x + "/" + y; ;
-    }
-    public virtual string serializeVariable(Vector3 var)
-    {
-        float x = var.x;
-        float y = var.y;
-        float z = var.z;
-        return x + "/" + y + "/" + z;
-    }
-    public virtual string serializeVariable(List<Vector2> var)
-    {
-        string serVar = "";
-        foreach (Vector2 vec in var)
+        if (tipo == typeof(int) || tipo == typeof(float))
         {
-            float x = vec.x;
-            float y = vec.y;
-            serVar += x + "/" + y + " ";
+            return var.ToString();
         }
-
-        return serVar;
-    }
-    public virtual string serializeVariable(List<Vector3> var)
-    {
-        string serVar = "";
-        foreach (Vector3 vec in var)
+        else if (tipo == typeof(bool))
         {
-            float x = vec.x;
-            float y = vec.y;
-            float z = vec.z;
-            serVar += x + "/" + y + "/" + z + " ";
+            return var.ToString();
         }
+        else if (tipo == typeof(List<int>) || tipo == typeof(List<float>))
+        {
+            return string.Join(" ", var);
+        }
+        else if (tipo == typeof(List<bool>))
+        {
+            return string.Join(" ", var);
+        }
+        else if (tipo == typeof(Vector2))
+        {
+            float x = var.x;
+            float y = var.y;
+            return x + "/" + y;
+        }
+        else if (tipo == typeof(Vector3))
+        {
+            float x = var.x;
+            float y = var.y;
+            float z = var.z;
+            return x + "/" + y + "/" + z;
+        }
+        else if (tipo == typeof(List<Vector2>))
+        {
+            string serVar = "";
+            foreach (Vector2 vec in var)
+            {
+                float x = vec.x;
+                float y = vec.y;
+                serVar += x + "/" + y + " ";
+            }
 
-        return serVar;
+            return serVar;
+        }
+        else if (tipo == typeof(List<Vector3>))
+        {
+            string serVar = "";
+            foreach (Vector3 vec in var)
+            {
+                float x = vec.x;
+                float y = vec.y;
+                float z = vec.z;
+                serVar += x + "/" + y + "/" + z + " ";
+            }
+
+            return serVar;
+        }
+        else
+        {
+            return null;
+        }
     }
     #endregion
     #region unserializeVars
