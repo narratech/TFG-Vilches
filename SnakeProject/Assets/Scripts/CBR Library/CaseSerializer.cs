@@ -48,6 +48,7 @@ public class CaseSerializer
         else if (tipo == typeof(List<Vector2>))
         {
             string serVar = "";
+
             foreach (Vector2 vec in var)
             {
                 float x = vec.x;
@@ -227,7 +228,7 @@ public class CaseSerializer
         {
             string name = variablesTypes[i].Split(":")[0];
             string type = variablesTypes[i].Split(":")[1];
-            if (name != "answer" && name != "weight") myCase.setProperty(name, unserializeVariable(values[i], type));
+            if (name != "answer" && name != "weight") myCase.setProperty(variablesTypes[i], unserializeVariable(values[i], type));
             else if (name == "answer") myCase.setAnswer(values[i]);
             else if (name == "weight") myCase.setWeight(int.Parse(values[i]));
             else return null;
