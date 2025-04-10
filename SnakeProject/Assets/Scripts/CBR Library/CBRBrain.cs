@@ -48,13 +48,17 @@ public class CBRBrain
     /// <param name="myFunc">Función lambda para la revisión custom. Puede ser null si se va con la por defecto</param>
     /// <param name="myFuncArgs"> Argumentos necesarios para la función lamda. Puede ser null si esta no los necesita</param>gs">
     /// <param name="type">Tipo de funcion que se va a usar para revisar el perfomance del caso y si se va a guardar</param>
-    public CBRBrain(string CSVname,CaseComparer myComparer = null, float similarityThreshold = 0, reuseAnswerType reuseType = reuseAnswerType.mostSimilar, int kNNRequired = 1, CaseFitness myFintess = null,
+    public CBRBrain(string CSVname,CaseSerializer mySerializer = null,CaseComparer myComparer = null, float similarityThreshold = 0, reuseAnswerType reuseType = reuseAnswerType.mostSimilar, int kNNRequired = 1, CaseFitness myFintess = null,
          Func<System.Object[], bool> myFunc =null,ReviseType type = ReviseType.alwaysRetain, System.Object[] myFuncArgs = null)
     {
         caseToSave = new List<CaseCBRv2>();
         readedCases = new List<CaseCBRv2>();
         casesToEvaluate = new Queue<CaseCBRv2>();
-        caseSerializer = new CaseSerializer();
+        if(mySerializer != null)
+        {
+            caseSerializer = mySerializer;
+        }
+        else caseSerializer = new CaseSerializer();
         possibleTwins = new List<CaseCBRv2>();
         this.weights = new Dictionary<string, float>();
         fitness = myFintess;

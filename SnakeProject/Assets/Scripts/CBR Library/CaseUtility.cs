@@ -51,9 +51,11 @@ public class CaseUtility
     public static float computeFloatListSimilarity(in List<float> query, in List<float> caseToLook, float range)
     {
         float disparity = 0;
-        for(int i=0;i<query.Count;i++)
+        int mostItems = Math.Max(caseToLook.Count, query.Count);
+        int lessItems = Math.Min(caseToLook.Count, query.Count);
+        for (int i=0;i<lessItems;i++)
         {
-            disparity += (1 - (Math.Abs(query[i] - caseToLook[i]) / range)) / query.Count;
+            disparity += (1 - (Math.Abs(query[i] - caseToLook[i]) / range)) / mostItems;
         }
         return 1 - disparity;
     }
@@ -76,9 +78,11 @@ public class CaseUtility
     public static float computeBoolListSimilarity(in List<bool> query, in List<bool> caseToLook)
     {
         float disparity = 0;
-        for (int i = 0; i < query.Count; i++)
+        int mostItems = Math.Max(caseToLook.Count, query.Count);
+        int lessItems = Math.Min(caseToLook.Count, query.Count);
+        for (int i = 0; i < lessItems; i++)
         {
-            disparity += (1 - (query[i] == caseToLook[i] ? 1 : 0)) / query.Count;
+            disparity += (1 - (query[i] == caseToLook[i] ? 1 : 0)) /mostItems;
         }
         return 1-disparity;
     }
@@ -119,9 +123,11 @@ public class CaseUtility
     public static float computeV2ListManhattanSimilarity(in List<Vector2> query, in List<Vector2> caseToLook, float range)
     {
         float disparity = 0;
-        for (int i = 0; i < query.Count; i++)
+        int mostItems = Math.Max(caseToLook.Count, query.Count);
+        int lessItems = Math.Min(caseToLook.Count, query.Count);
+        for (int i = 0; i < lessItems; i++)
         {
-            disparity += (1 - ((Math.Abs(query[i].x - caseToLook[i].x) + Math.Abs(query[i].y - caseToLook[i].y)) / range))/query.Count;
+            disparity += (1 - ((Math.Abs(query[i].x - caseToLook[i].x) + Math.Abs(query[i].y - caseToLook[i].y)) / range))/mostItems;
         }
         return 1 - disparity;
     }
@@ -135,9 +141,11 @@ public class CaseUtility
     public static float computeV2ListEuclideanSimilarity(in List<Vector2> query, in List<Vector2> caseToLook, float range)
     {
         float disparity = 0;
-        for (int i = 0; i < query.Count; i++)
+        int mostItems = Math.Max(caseToLook.Count, query.Count);
+        int lessItems = Math.Min(caseToLook.Count, query.Count);
+        for (int i = 0; i < lessItems; i++)
         {
-            disparity += (1 - (((float)Math.Sqrt((float)Math.Pow(query[i].x - caseToLook[i].x, 2) + (float)Math.Pow(query[i].y - caseToLook[i].y, 2))) / range)) / query.Count;
+            disparity += (1 - (((float)Math.Sqrt((float)Math.Pow(query[i].x - caseToLook[i].x, 2) + (float)Math.Pow(query[i].y - caseToLook[i].y, 2))) / range)) / mostItems;
         }
         return 1 - disparity;
     }
@@ -178,10 +186,12 @@ public class CaseUtility
     public static float computeV3ListManhattanSimilarity(in List<Vector3> query, in List<Vector3> caseToLook, float range)
     {
         float disparity = 0;
-        for (int i = 0; i < query.Count; i++)
+        int mostItems = Math.Max(caseToLook.Count, query.Count);
+        int lessItems = Math.Min(caseToLook.Count, query.Count);
+        for (int i = 0; i < lessItems; i++)
         {
             disparity += (1 - ((Math.Abs(query[i].x - caseToLook[i].x) + 
-                Math.Abs(query[i].y - caseToLook[i].y) + Math.Abs(query[i].z - caseToLook[i].z)) / range)) / query.Count;
+                Math.Abs(query[i].y - caseToLook[i].y) + Math.Abs(query[i].z - caseToLook[i].z)) / range)) / mostItems;
         }
         return 1 - disparity;
     }
@@ -195,10 +205,12 @@ public class CaseUtility
     public static float computeV3ListEuclideanSimilarity(in List<Vector3> query, in List<Vector3> caseToLook, float range)
     {
         float disparity = 0;
-        for (int i = 0; i < query.Count; i++)
+        int mostItems = Math.Max(caseToLook.Count, query.Count);
+        int lessItems = Math.Min(caseToLook.Count, query.Count);
+        for (int i = 0; i < lessItems; i++)
         {
             disparity += (1 - (((float)Math.Sqrt((float)Math.Pow(query[i].x - caseToLook[i].x, 2) + 
-                (float)Math.Pow(query[i].y - caseToLook[i].y, 2)+(float)Math.Pow(query[i].z - caseToLook[i].z,2) / range)))) / query.Count;
+                (float)Math.Pow(query[i].y - caseToLook[i].y, 2)+(float)Math.Pow(query[i].z - caseToLook[i].z,2) / range)))) / mostItems;
         }
         return 1 - disparity;
     }

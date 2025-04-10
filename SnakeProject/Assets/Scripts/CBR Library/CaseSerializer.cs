@@ -48,12 +48,14 @@ public class CaseSerializer
         else if (tipo == typeof(List<Vector2>))
         {
             string serVar = "";
-
+            int i = 0;
             foreach (Vector2 vec in var)
             {
                 float x = vec.x;
                 float y = vec.y;
-                serVar += x + "/" + y + " ";
+                serVar += x + "/" + y;
+                if(i<var.Count-1) serVar += " ";
+                i++;
             }
 
             return serVar;
@@ -61,12 +63,15 @@ public class CaseSerializer
         else if (tipo == typeof(List<Vector3>))
         {
             string serVar = "";
+            int i = 0;
             foreach (Vector3 vec in var)
             {
                 float x = vec.x;
                 float y = vec.y;
                 float z = vec.z;
-                serVar += x + "/" + y + "/" + z + " ";
+                serVar += x + "/" + y + "/" + z;
+                if (i < var.Count - 1) serVar += " ";
+                i++;
             }
 
             return serVar;
@@ -229,8 +234,8 @@ public class CaseSerializer
             string name = variablesTypes[i].Split(":")[0];
             string type = variablesTypes[i].Split(":")[1];
             if (name != "answer" && name != "weight") myCase.setProperty(variablesTypes[i], unserializeVariable(values[i], type));
-            else if (name == "answer") myCase.setAnswer(values[i]);
-            else if (name == "weight") myCase.setWeight(int.Parse(values[i]));
+            else if (name == "answer") myCase.setAnswer(unserializeVariable(values[i], type));
+            else if (name == "weight") myCase.setWeight((int)unserializeVariable(values[i], type));
             else return null;
         }
         return myCase;
@@ -245,7 +250,7 @@ public class CaseSerializer
             string name = variableNames[i].Split(":")[0];
             string type = variableNames[i].Split(":")[1];
             myCaseParsed += serializeVariable(myCase.getProperty(name));
-            myCaseParsed += ",";
+            if(i < variableNames.Count - 1)myCaseParsed += ",";
         }
         return myCaseParsed;
 

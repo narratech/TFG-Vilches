@@ -71,8 +71,7 @@ public class CBRContrSnake : SnakeControl
     {
         base.Start();
         caseSerializer = new myCaseSerializer();
-        myBrain = new CBRBrain("Prueba1",new myComparer(),0.95f);
-        myBrain.setCaseSerializer(caseSerializer);
+        myBrain = new CBRBrain("Prueba1",caseSerializer,new myComparer(),0.95f);
         reviseCounter = 0;
     }
 
