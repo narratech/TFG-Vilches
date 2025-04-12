@@ -320,6 +320,17 @@ public class CBRBrain
         }
         return res;
     }
+    public void learnFromHuman(CaseCBRv2 query, dynamic playerAnswer)
+    {
+        if (!normalizedWeights)
+        {
+            normalizeWeights();
+            normalizedWeights = true;
+        }
+        query.setAnswer(playerAnswer);
+        retainCases(query);
+
+    }
     public void persistCases()
     {
         caseSerializer.writeCases(CSVname, caseToSave);

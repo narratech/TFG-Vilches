@@ -5,7 +5,7 @@ using UnityEngine;
 
 public enum Direction
 {
-    LEFT,RIGHT
+    LEFT,RIGHT, NODIRECTION
 }
 class myCaseSerializer: CaseSerializer
 {
@@ -15,7 +15,7 @@ class myCaseSerializer: CaseSerializer
         {
             if (var == Direction.LEFT) return "left";
             else if (var == Direction.RIGHT) return "right";
-            else return "recto";
+            else return "noDirection";
         }
         else
         {
@@ -28,6 +28,7 @@ class myCaseSerializer: CaseSerializer
         {
             if (var == "left") return Direction.LEFT;
             else if (var == "right") return Direction.RIGHT;
+            else if (var == "noDirection") return Direction.NODIRECTION;
             else return null;
         }
         else return base.unserializeVariable(var, type);
@@ -65,6 +66,8 @@ public class CBRContrSnake : SnakeControl
     CBRBrain myBrain;
     myCaseSerializer caseSerializer;
     int reviseCounter;
+    bool humanControl = false;
+    Direction lastDirectionPicked = Direction.NODIRECTION;
     #endregion
     // Start is called before the first frame update
     protected override void Start()
@@ -82,9 +85,11 @@ public class CBRContrSnake : SnakeControl
         {
             base.Update();
             if (Input.GetKeyDown(KeyCode.G)) myBrain.persistCases();
+            if(Input.GetKeyDown(KeyCode.M)) humanControl = !humanControl;
+            if(humanControl) HandleHumanInput();
             if (elapsedTime > 1 / speed)
             {
-                
+                Move();
                 if (playerOne)
                 {
                     GameManager.Instance.setPlayer1Positions(snakePositions);
@@ -95,11 +100,13 @@ public class CBRContrSnake : SnakeControl
                     GameManager.Instance.setPlayer2Positions(snakePositions);
                     GameManager.Instance.setPlayer2Dir(new Vector2(myDirection.x,myDirection.z));
                 }
-                HandleInput();
-                Move();
+                if(!humanControl)HandleInput();
+                else myBrain.learnFromHuman(formACase(), lastDirectionPicked);
                 elapsedTime = 0;
-                reviseCounter++;
+                if(!humanControl)reviseCounter++;
+                lastDirectionPicked = Direction.NODIRECTION;
             }
+            
         }
     }
 
@@ -108,9 +115,10 @@ public class CBRContrSnake : SnakeControl
         Direction myDir = myBrain.CBRCycle(formACase(), (System.Object[] args) => 
         {
             System.Random rnd = new System.Random();
-            int xd = rnd.Next(0, 2);
+            int xd = rnd.Next(0, 3);
             if(xd == 0) return Direction.RIGHT;
-            else return Direction.LEFT;
+            else if (xd == 1) return Direction.LEFT;
+            else return Direction.NODIRECTION;
             
         });
         if (myDir == Direction.LEFT)
@@ -121,12 +129,21 @@ public class CBRContrSnake : SnakeControl
         {
             turnRigth();
         }
-        else
-        {
-
-        }
         if (reviseCounter >= 3) myBrain.setEvaluateNextCase(true);
 
+    }
+    void HandleHumanInput()
+    {
+        if ((playerOne && Input.GetKeyDown(KeyCode.A)) || (!playerOne && Input.GetKeyDown(KeyCode.LeftArrow)))
+        {
+            turnLeft();
+            lastDirectionPicked = Direction.LEFT;
+        }
+        else if ((playerOne && Input.GetKeyDown(KeyCode.D)) || (!playerOne && Input.GetKeyDown(KeyCode.RightArrow)))
+        {
+            turnRigth();
+            lastDirectionPicked= Direction.RIGHT;
+        }
     }
 
     CaseCBRv2 formACase()
