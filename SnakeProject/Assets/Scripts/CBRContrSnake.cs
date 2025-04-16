@@ -66,7 +66,7 @@ public class CBRContrSnake : SnakeControl
     CBRBrain myBrain;
     myCaseSerializer caseSerializer;
     int reviseCounter;
-    bool humanControl = false;
+    bool humanControl = true;
     Direction lastDirectionPicked = Direction.NODIRECTION;
     #endregion
     // Start is called before the first frame update

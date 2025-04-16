@@ -7,13 +7,20 @@ public class GameManager : MonoBehaviour
 {
     private struct NodeInfo
     {
+        public enum snakePresent
+        {
+            player1, player2,none
+        }
+        public snakePresent wichSnake;
         public bool fruitPresent;
         public bool snakePartPresent;
         public Vector3 centro;
+
         public NodeInfo(bool fruit, bool snakePart, Vector3 cent)
         {
             fruitPresent = fruit;
             snakePartPresent = snakePart;
+            wichSnake = snakePresent.none;
             centro = cent;
         }
     }
@@ -123,14 +130,16 @@ public class GameManager : MonoBehaviour
     }
 
 
-    public void occupieNode(int nodeX, int nodeY)
+    public void occupieNode(int nodeX, int nodeY, bool playerOne)
     {
         myNodos[nodeX,nodeY].snakePartPresent = true;
+        myNodos[nodeX,nodeY].wichSnake = playerOne? NodeInfo.snakePresent.player1 : NodeInfo.snakePresent.player2;
         freeNodes.Remove(new Vector2(nodeX, nodeY));
     }
     public void deOccupieNode(int nodeX, int nodeY)
     {
         myNodos[nodeX, nodeY].snakePartPresent = false;
+        myNodos[nodeX,nodeY].wichSnake = NodeInfo.snakePresent.none;
         freeNodes.Add(new Vector2(nodeX, nodeY));
     }
     public bool isThereFruit(int nodeX, int nodeY)
@@ -144,9 +153,15 @@ public class GameManager : MonoBehaviour
         instantiatedFruit = null;
         // No ponemos en nodosFree porque habra serpiente que se haya comido la fruta
     }
-    public bool isThereSnake(int nodeX, int nodeY)
+    public bool isThereSnake(int nodeX, int nodeY, bool playerOne)
     {
-        return myNodos[nodeX, nodeY].snakePartPresent;
+        if(myNodos[nodeX, nodeY].snakePartPresent)
+        {
+            if ((myNodos[nodeX, nodeY].wichSnake == NodeInfo.snakePresent.player1 && !playerOne) ||
+                (myNodos[nodeX, nodeY].wichSnake == NodeInfo.snakePresent.player2 && playerOne)) return true;
+            else return false;
+        }
+        else return false;
     }
 
     public void lostGame(bool isPlayerOne)
