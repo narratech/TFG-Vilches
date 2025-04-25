@@ -157,6 +157,8 @@ public class SnakeControl : MonoBehaviour
             {
                 growthNeeded = true;
                 GameManager.Instance.eatFruit(nodeX, nodeY);
+                if (playerOne) GameManager.Instance.addPlayer1Score(100);
+                else GameManager.Instance.addPlayer2Score(100);
             }
 
             for (int i = 0; i < bodyParts.Count; i++)
@@ -247,5 +249,15 @@ public class SnakeControl : MonoBehaviour
         newDirect = newDirect.normalized;
         myNodos[nodeX, nodeY].direccion = newDirect;
         myNodos[nodeX, nodeY].rotationNeeded = -90;
+    }
+    protected List<float> getWallsDistance()
+    {
+        List<float> distance = new List<float>();
+
+        distance.Add(headNode.x); // Distancia a la pared izquierda
+        distance.Add(headNode.y); // Distancia a la pared inferior
+        distance.Add(29 - headNode.x); // Distancia a la pared derecha
+        distance.Add(18- headNode.y); // Distancia a la pared superior
+        return distance;
     }
 }

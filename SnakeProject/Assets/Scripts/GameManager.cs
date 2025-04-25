@@ -45,6 +45,8 @@ public class GameManager : MonoBehaviour
     private GameObject instantiatedFruit;
 
     private bool keepPlaying;
+    private int player1Score;
+    private int player2Score;
 
     private void Awake()
     {
@@ -173,9 +175,31 @@ public class GameManager : MonoBehaviour
     {
         UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(0);
         UnityEngine.SceneManagement.SceneManager.LoadScene(0); // Recarga la escena
+        // DUDA: Reiniciar puntuacion
     }
     public bool getKeepPlaying()
     {
         return keepPlaying;
+    }
+
+    public int getPlayer1Score()
+    {
+        return player1Score;
+    }
+
+    public int getPlayer2Score()
+    {
+        return player2Score;
+    }
+    public void addPlayer1Score(int points)
+    {
+        player1Score += points;
+        GuiManager.GetComponent<GUIManager>().ChangeP1Points(player1Score);
+    }
+
+    public void addPlayer2Score(int points)
+    {
+         player2Score+= points;
+        GuiManager.GetComponent<GUIManager>().ChangeP1Points(player2Score);
     }
 }

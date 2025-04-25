@@ -41,15 +41,15 @@ public class CBRBrain
     /// Crea el CBRBrain necesario para funcionar
     /// </summary>
     /// <param name="CSVname">Nombre de la base de datos</param>
-    /// <param name="myFintess">Funcion para decidir que caso es mejor</param>
+    /// <param name="myFintess">Funcion para decidir que caso es mejor (por similaritud, por aptitud, etc...)</param>
     /// <param name="similarityThreshold">Entre 0 y 1, como de similar tienen que ser los casos para que no se guarden</param>
     /// <param name="kNNRequired">Numero de casos que se recuperan para la respuesta</param>
     /// <param name="myComparer">Comparador para decidir como se computa la similiritud de los casos</param>
-    /// <param name="myFunc">Función lambda para la revisión custom. Puede ser null si se va con la por defecto</param>
+    /// <param name="customReview">Función lambda para la revisión custom. Puede ser null si se va con la por defecto</param>
     /// <param name="myFuncArgs"> Argumentos necesarios para la función lamda. Puede ser null si esta no los necesita</param>gs">
     /// <param name="type">Tipo de funcion que se va a usar para revisar el perfomance del caso y si se va a guardar</param>
     public CBRBrain(string CSVname,CaseSerializer mySerializer = null,CaseComparer myComparer = null, float similarityThreshold = 0, reuseAnswerType reuseType = reuseAnswerType.mostSimilar, int kNNRequired = 1, CaseFitness myFintess = null,
-         Func<System.Object[], bool> myFunc =null,ReviseType type = ReviseType.alwaysRetain, System.Object[] myFuncArgs = null)
+         Func<System.Object[], bool> customReview = null,ReviseType type = ReviseType.alwaysRetain, System.Object[] customReviewArgs = null)
     {
         caseToSave = new List<CaseCBRv2>();
         readedCases = new List<CaseCBRv2>();
@@ -67,8 +67,8 @@ public class CBRBrain
         caseSerializer.readCases(CSVname, ref readedCases);
         this.kNNRequired = kNNRequired;
         this.similThresh = similarityThreshold;
-        this.myFunc = myFunc;
-        this.myFuncArgs = myFuncArgs;
+        this.myFunc = customReview;
+        this.myFuncArgs = customReviewArgs;
         this.reviseType = type;
         this.reuseAnswer = reuseType;
         this.normalizedWeights = false;

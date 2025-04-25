@@ -68,6 +68,7 @@ public class CBRContrSnake : SnakeControl
     int reviseCounter;
     bool humanControl = true;
     Direction lastDirectionPicked = Direction.NODIRECTION;
+    CaseCBRv2 lastQuery = null;
     #endregion
     // Start is called before the first frame update
     protected override void Start()
@@ -154,6 +155,9 @@ public class CBRContrSnake : SnakeControl
         myBrain.setWeigth("position", 0.1f);
         query.setProperty("headDirection:vector3",this.myDirection);
         myBrain.setWeigth("headDirection", 0.15f);
+        query.setProperty("DistanceToWalls",this.getWallsDistance());
+        myBrain.setWeigth("DistanceToWalls", 0.1f);
+        query.setProperty("Score", 100); // Esto luego se modifica si juega la cbr y lo deja como buen movimiento si lo ha puesto un humano
         if(playerOne)
         {
             List<Vector2>myList = new List<Vector2>(GameManager.Instance.getPlayer1Positions());
@@ -161,6 +165,7 @@ public class CBRContrSnake : SnakeControl
             List<Vector2>myList2 = new List<Vector2>(GameManager.Instance.getPlayer2Positions());
             query.setProperty("otherSnakePartsNode:vector2List", myList2);
             query.setProperty("otherSnakeDir:vector2", GameManager.Instance.getPlayer2Dir());
+            query.setProperty("LevelScore", GameManager.Instance.getPlayer1Score());
         }
         else
         {
@@ -169,14 +174,42 @@ public class CBRContrSnake : SnakeControl
             List<Vector2> myList2 = new List<Vector2>(GameManager.Instance.getPlayer1Positions());
             query.setProperty("otherSnakePartsNode:vector2List", myList2);
             query.setProperty("otherSnakeDir:vector2", GameManager.Instance.getPlayer1Dir());
+            query.setProperty("LevelScore", GameManager.Instance.getPlayer2Score());
         }
         
         myBrain.setWeigth("myPartsNodes", 0.25f);
         myBrain.setWeigth("otherSnakePartsNode", 0.25f);
-        myBrain.setWeigth("otherSnakeDir", 0.15f);
+        myBrain.setWeigth("otherSnakeDir", 0.05f);
         query.setProperty("fruitPos:vector2", GameManager.Instance.getFruitNode());
         myBrain.setWeigth("fruitPos", 0.1f);
+
         return query;
 
+    }
+
+    /// <summary>
+    /// Se encarga de evaluar cómo de buena ha sido una jugada comparandola con el estado de la partida un tiempo despues
+    /// </summary>
+    /// <param name="query">El caso a evaluar</param>
+    /// <param name="futureQuery">El estado actual del juego</param>
+    /// <returns>El valor Score del caso</returns>
+
+    int caseScore(in CaseCBRv2 query, in CaseCBRv2 futureQuery)
+    {
+        int score = 0;
+
+        if (query.getProperty("levelScore").Count > futureQuery.getProperty("levelScore")) // Se ha reiniciado el nivel
+            score -= 100;
+        if (query.getProperty("myPartsNodes").Count < futureQuery.getProperty("myPartsNodes").Count) // Se ha comido fruta
+            score += 10;
+        if (stateAfter.avoidedCollision) //TODO: Mirar la distancia hacia la pared que esta mirando(Escalar recompensa con dsitancia)
+            score += 2;
+
+        float distanceBefore = calculateDistance(stateBefore.head, stateBefore.closestFruit);
+        float distanceAfter = calculateDistance(stateAfter.head, stateAfter.closestFruit);
+
+        if (distanceAfter < distanceBefore)
+            score += 1;
+        return score;
     }
 }
