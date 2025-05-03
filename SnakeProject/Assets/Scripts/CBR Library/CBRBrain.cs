@@ -27,7 +27,7 @@ public class CBRBrain
     CaseComparer comparer;
     ReviseType reviseType;
     reuseAnswerType reuseAnswer;
-    Func<System.Object[], bool> myFunc;
+    Func<CaseCBRv2,CaseCBRv2,System.Object[], bool> myFunc;
     System.Object[] myFuncArgs;
 
     Dictionary<string, float> weights;
@@ -49,7 +49,7 @@ public class CBRBrain
     /// <param name="myFuncArgs"> Argumentos necesarios para la función lamda. Puede ser null si esta no los necesita</param>gs">
     /// <param name="type">Tipo de funcion que se va a usar para revisar el perfomance del caso y si se va a guardar</param>
     public CBRBrain(string CSVname,CaseSerializer mySerializer = null,CaseComparer myComparer = null, float similarityThreshold = 0, reuseAnswerType reuseType = reuseAnswerType.mostSimilar, int kNNRequired = 1, CaseFitness myFintess = null,
-         Func<System.Object[], bool> customReview = null,ReviseType type = ReviseType.alwaysRetain, System.Object[] customReviewArgs = null)
+         Func<CaseCBRv2,CaseCBRv2,System.Object[], bool> customReview = null,ReviseType type = ReviseType.alwaysRetain, System.Object[] customReviewArgs = null)
     {
         caseToSave = new List<CaseCBRv2>();
         readedCases = new List<CaseCBRv2>();
@@ -234,12 +234,12 @@ public class CBRBrain
 /// </summary>
 /// <param name="type">Enumerador indicando el tipo de revisión</param>
 /// <returns></returns>
-    public bool reviseCase(ReviseType type)
+    public bool reviseCase(ReviseType type, CaseCBRv2 caseToRevise, CaseCBRv2 newCase)
     {
         if (type == ReviseType.custom)
         {
             //ERROR: myFunc es null
-            bool save = myFunc(myFuncArgs);
+            bool save = myFunc(caseToRevise,newCase, myFuncArgs);
             if(!save) possibleTwins.Clear(); // Si no lo vas a guardar, no te interesa saber si ya hay en la base de datos
             return save;
         }
@@ -311,7 +311,7 @@ public class CBRBrain
             CaseCBRv2 caseToEvaluate;
             if(casesToEvaluate.TryDequeue(out caseToEvaluate))
             {
-                if(reviseCase(reviseType))
+                if(reviseCase(reviseType, caseToEvaluate,query))
                 {
                     retainCases(in caseToEvaluate);
                     evaluateNextCase = false;

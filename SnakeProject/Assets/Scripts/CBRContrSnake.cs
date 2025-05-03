@@ -1,7 +1,9 @@
+using JetBrains.Annotations;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SocialPlatforms.Impl;
 
 public enum Direction
 {
@@ -55,8 +57,28 @@ class myComparer : CaseComparer
            caseToLook.getProperty("myPartsNodes"), maxDistance) * weigths["myPartsNodes"];
         similarity += CaseUtility.computeV2ListManhattanSimilarity(query.getProperty("otherSnakePartsNode"),
           caseToLook.getProperty("otherSnakePartsNode"), maxDistance) * weigths["otherSnakePartsNode"];
+        similarity += CaseUtility.computeFloatListSimilarity(query.getProperty("DistanceToWalls"), caseToLook.getProperty("DistanceToWalls"),maxDistance);
 
         return new Tuple<CaseCBRv2,float>(caseToLook, similarity);
+    }
+}
+
+class myCaseFitness : CaseFitness
+{
+    public virtual int Compare(Tuple<CaseCBRv2, float> x, Tuple<CaseCBRv2, float> y)
+    {
+        double actualValueX = x.Item2;
+        double actualValueY = y.Item2;
+        // TODO: Calcular el score y ver cuanto afecta a la elección
+        if (actualValueX > actualValueY)
+        {
+            return -1;
+        }
+        else if (actualValueX < actualValueY)
+        {
+            return 1;
+        }
+        else return 0;
     }
 }
 
@@ -75,7 +97,7 @@ public class CBRContrSnake : SnakeControl
     {
         base.Start();
         caseSerializer = new myCaseSerializer();
-        myBrain = new CBRBrain("Prueba1",caseSerializer,new myComparer(),0.95f);
+        myBrain = new CBRBrain("Prueba1",caseSerializer,new myComparer(),0.95f,reuseAnswerType.mostVoted,5,new myCaseFitness(),evaluateCase);
         reviseCounter = 0;
     }
 
@@ -154,10 +176,10 @@ public class CBRContrSnake : SnakeControl
         query.setProperty("position:vector2", headNode);
         myBrain.setWeigth("position", 0.1f);
         query.setProperty("headDirection:vector3",this.myDirection);
-        myBrain.setWeigth("headDirection", 0.15f);
-        query.setProperty("DistanceToWalls",this.getWallsDistance());
+        myBrain.setWeigth("headDirection", 0.1f);
+        query.setProperty("DistanceToWalls:floatList",this.getWallsDistance());
         myBrain.setWeigth("DistanceToWalls", 0.1f);
-        query.setProperty("Score", 100); // Esto luego se modifica si juega la cbr y lo deja como buen movimiento si lo ha puesto un humano
+        query.setProperty("Score:float", 100); // Esto luego se modifica si juega la cbr y lo deja como buen movimiento si lo ha puesto un humano
         if(playerOne)
         {
             List<Vector2>myList = new List<Vector2>(GameManager.Instance.getPlayer1Positions());
@@ -165,7 +187,7 @@ public class CBRContrSnake : SnakeControl
             List<Vector2>myList2 = new List<Vector2>(GameManager.Instance.getPlayer2Positions());
             query.setProperty("otherSnakePartsNode:vector2List", myList2);
             query.setProperty("otherSnakeDir:vector2", GameManager.Instance.getPlayer2Dir());
-            query.setProperty("LevelScore", GameManager.Instance.getPlayer1Score());
+            query.setProperty("LevelScore:float", GameManager.Instance.getPlayer1Score());
         }
         else
         {
@@ -174,7 +196,7 @@ public class CBRContrSnake : SnakeControl
             List<Vector2> myList2 = new List<Vector2>(GameManager.Instance.getPlayer1Positions());
             query.setProperty("otherSnakePartsNode:vector2List", myList2);
             query.setProperty("otherSnakeDir:vector2", GameManager.Instance.getPlayer1Dir());
-            query.setProperty("LevelScore", GameManager.Instance.getPlayer2Score());
+            query.setProperty("LevelScore:float", GameManager.Instance.getPlayer2Score());
         }
         
         myBrain.setWeigth("myPartsNodes", 0.25f);
@@ -182,9 +204,20 @@ public class CBRContrSnake : SnakeControl
         myBrain.setWeigth("otherSnakeDir", 0.05f);
         query.setProperty("fruitPos:vector2", GameManager.Instance.getFruitNode());
         myBrain.setWeigth("fruitPos", 0.1f);
+        query.setProperty("inTrackToCollide:bool", inTrackToCollision());
+        myBrain.setWeigth("inTrackToCollide", 0.05f);
 
         return query;
 
+    }
+
+
+    bool evaluateCase(CaseCBRv2 query, CaseCBRv2 futureQuery)
+    {
+        float score = caseScore(query, futureQuery);
+        query.setProperty("Score:float", score);
+        if (score >= 1) return true;
+        else return false;
     }
 
     /// <summary>
@@ -202,14 +235,38 @@ public class CBRContrSnake : SnakeControl
             score -= 100;
         if (query.getProperty("myPartsNodes").Count < futureQuery.getProperty("myPartsNodes").Count) // Se ha comido fruta
             score += 10;
-        if (stateAfter.avoidedCollision) //TODO: Mirar la distancia hacia la pared que esta mirando(Escalar recompensa con dsitancia)
-            score += 2;
+        if (query.getProperty("inTrackToCollide")) //Mirar la distancia hacia la pared que esta mirando(Escalar recompensa con dsitancia
+        { if (futureQuery.getProperty("inTrackToCollide"))
+                score += 4;
+        }
 
-        float distanceBefore = calculateDistance(stateBefore.head, stateBefore.closestFruit);
-        float distanceAfter = calculateDistance(stateAfter.head, stateAfter.closestFruit);
+        float distanceBefore = (Math.Abs(query.getProperty("headDirection").x - query.getProperty("fruitPos").x) + Math.Abs(query.getProperty("headDirection").z - query.getProperty("fruitPos").y));
+        float distanceAfter = (Math.Abs(query.getProperty("headDirection").x - query.getProperty("fruitPos").x) + Math.Abs(query.getProperty("headDirection").z - query.getProperty("fruitPos").y));
 
         if (distanceAfter < distanceBefore)
-            score += 1;
+            score += 2;
         return score;
+    }
+
+    bool inTrackToCollision()
+    {
+        bool inTrackToCollision = false;
+        if(this.myDirection.x != 0)
+        {
+            for(int i = 0; i < 5; i++) // Mira en 5 casillas desde donde estoy
+            {
+                if (GameManager.Instance.isThereSnake((int)(this.headNode.x + (this.myDirection.x * i)), (int)this.headNode.y, this.playerOne)) inTrackToCollision = true;
+            }
+            if((this.headNode.x + this.myDirection.x * 5)>=29 || (this.headNode.x + this.myDirection.x * 5) <= 0) inTrackToCollision = true;
+        }
+        else
+        {
+            for (int i = 0; i < 5; i++) // Mira en 5 casillas desde donde estoy
+            {
+                if (GameManager.Instance.isThereSnake((int)this.headNode.x, (int)(this.headNode.y + (this.myDirection.y * i)), this.playerOne)) inTrackToCollision = true;
+            }
+            if ((this.headNode.y + this.myDirection.y * 5) >= 18 || (this.headNode.y + this.myDirection.y * 5) <= 0) inTrackToCollision = true;
+        }
+        return inTrackToCollision;
     }
 }
