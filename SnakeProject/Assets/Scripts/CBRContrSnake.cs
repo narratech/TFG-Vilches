@@ -65,10 +65,10 @@ class myComparer : CaseComparer
 
 class myCaseFitness : CaseFitness
 {
-    public virtual int Compare(Tuple<CaseCBRv2, float> x, Tuple<CaseCBRv2, float> y)
+    public override int Compare(Tuple<CaseCBRv2, float> x, Tuple<CaseCBRv2, float> y)
     {
-        double actualValueX = x.Item2;
-        double actualValueY = y.Item2;
+        double actualValueX = x.Item2 * 0.8 + (x.Item1.getProperty("Score") / 100) * 0.2;
+        double actualValueY = y.Item2 * 0.8 + (y.Item1.getProperty("Score") / 100)*0.2;
         // TODO: Calcular el score y ver cuanto afecta a la elección
         if (actualValueX > actualValueY)
         {
@@ -88,7 +88,7 @@ public class CBRContrSnake : SnakeControl
     CBRBrain myBrain;
     myCaseSerializer caseSerializer;
     int reviseCounter;
-    bool humanControl = true;
+    bool humanControl = false;
     Direction lastDirectionPicked = Direction.NODIRECTION;
     CaseCBRv2 lastQuery = null;
     #endregion
@@ -97,7 +97,7 @@ public class CBRContrSnake : SnakeControl
     {
         base.Start();
         caseSerializer = new myCaseSerializer();
-        myBrain = new CBRBrain("Prueba1",caseSerializer,new myComparer(),0.95f,reuseAnswerType.mostVoted,5,new myCaseFitness(),evaluateCase);
+        myBrain = new CBRBrain("Prueba1",caseSerializer,new myComparer(),0.95f,reuseAnswerType.mostVoted,5,new myCaseFitness(),customEvaluateCase);
         reviseCounter = 0;
     }
 
@@ -212,7 +212,7 @@ public class CBRContrSnake : SnakeControl
     }
 
 
-    bool evaluateCase(CaseCBRv2 query, CaseCBRv2 futureQuery)
+    bool customEvaluateCase(CaseCBRv2 query, CaseCBRv2 futureQuery, System.Object[] myArgs)
     {
         float score = caseScore(query, futureQuery);
         query.setProperty("Score:float", score);
@@ -232,7 +232,7 @@ public class CBRContrSnake : SnakeControl
         int score = 0;
 
         if (query.getProperty("levelScore").Count > futureQuery.getProperty("levelScore")) // Se ha reiniciado el nivel
-            score -= 100;
+            score -= 100; // Creo que no se usa nunca porque al retry se borran los que estaban en evaluación pero jsutamente por eso no se guardan si mueres
         if (query.getProperty("myPartsNodes").Count < futureQuery.getProperty("myPartsNodes").Count) // Se ha comido fruta
             score += 10;
         if (query.getProperty("inTrackToCollide")) //Mirar la distancia hacia la pared que esta mirando(Escalar recompensa con dsitancia
@@ -245,6 +245,8 @@ public class CBRContrSnake : SnakeControl
 
         if (distanceAfter < distanceBefore)
             score += 2;
+        else if (distanceAfter > distanceBefore)
+            score -= 1;
         return score;
     }
 

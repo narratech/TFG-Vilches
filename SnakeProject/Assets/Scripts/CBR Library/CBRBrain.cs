@@ -73,6 +73,10 @@ public class CBRBrain
         this.reuseAnswer = reuseType;
         this.normalizedWeights = false;
     }
+    ~CBRBrain()
+    {
+        persistCases();
+    }
     #region public
     /// <summary>
     /// Añade un valor al peso de una caracteristica y se normaliza
@@ -181,10 +185,9 @@ public class CBRBrain
                 Tuple<dynamic, int> answer = null;
                 foreach (Tuple<CaseCBRv2, float> myCase in knnCases)
                 {
-                    if (!votes.ContainsKey(query.getAnswer()))
+                    if (!votes.ContainsKey(myCase.Item1.getAnswer()))
                     {
                         votes.Add(myCase.Item1.getAnswer(), 1);
-                        if (answer == null) answer = new Tuple<dynamic, int>(myCase.Item1.getAnswer(), 1);
                     }
                     else
                     {
@@ -192,6 +195,8 @@ public class CBRBrain
                         if (answer.Item2 < votes[myCase.Item1.getAnswer()]) answer = new Tuple<dynamic, int>(myCase.Item1.getAnswer(), 1);
                     }
                 }
+                // TODO: votes.OrderByDescending(x => x.Value).First().Key
+                // Ordenar por votos y colocar la respuesta que mas votos reciba
                 query.setAnswer(answer.Item1);
                 return answer.Item1;
             }
