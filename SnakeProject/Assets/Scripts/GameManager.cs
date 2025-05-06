@@ -200,6 +200,6 @@ public class GameManager : MonoBehaviour
     public void addPlayer2Score(int points)
     {
          player2Score+= points;
-        GuiManager.GetComponent<GUIManager>().ChangeP1Points(player2Score);
+        GuiManager.GetComponent<GUIManager>().ChangeP2Points(player2Score);
     }
 }

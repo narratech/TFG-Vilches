@@ -161,11 +161,18 @@ public class CaseSerializer
     #region private
     private List<CaseCBRv2> caseList;
     private int casesCount;
+    StreamReader myReader;
+    StreamWriter myWriter;
     #endregion
 
     public CaseSerializer()
     {
         caseList = new List<CaseCBRv2>();
+    }
+    ~CaseSerializer()
+    {
+        if(myReader != null) myReader.Close();
+        if(myWriter != null) myWriter.Close();
     }
     /// <summary>
     /// Metodo virtual de lectura de casos desde CSV. Tiene por defecto una implementación básica pero para lecturas más complejas
@@ -177,7 +184,7 @@ public class CaseSerializer
     {
         if (File.Exists("CaseBase/" + csvName+".csv")) // Si existe una base de casos, leelos
         {
-            StreamReader myReader = new StreamReader("CaseBase/" + csvName+".csv");
+            myReader = new StreamReader("CaseBase/" + csvName+".csv");
             // Lee y parsea los datos a casos
             caseList = readedCases;
             string[] variablesTypes = myReader.ReadLine().Split(","); // Primera linea con los nombres y tipos de las variables
@@ -187,6 +194,8 @@ public class CaseSerializer
                 readedCases.Add(serializeCSVToCase(variablesTypes, values));
             }
             myReader.Close();
+            myReader = null;
+            Debug.Log("Reader Closed");
         }
         casesCount = readedCases.Count;
     }
@@ -204,7 +213,7 @@ public class CaseSerializer
         if (!File.Exists("CaseBase/" + CSVname +".csv")) existedBefore = false;
         else id = casesCount; //Las id de los nuevos casos que no estan escritos
 
-        StreamWriter myWriter = new StreamWriter("CaseBase/" + CSVname + ".csv", true);
+        myWriter = new StreamWriter("CaseBase/" + CSVname + ".csv", true);
         if (!existedBefore)
         {
             string names = "id," + string.Join(",", caseToSave[0].getVariableNames());
@@ -217,6 +226,8 @@ public class CaseSerializer
         }
 
         myWriter.Close();
+        myWriter = null;
+        Debug.Log("Writer Closed");
     }
     /// <summary>
     /// Es un método para la lectura de casos por defecto. Genera casos leidos desde csv. 

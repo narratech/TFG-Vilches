@@ -90,14 +90,13 @@ public class CBRContrSnake : SnakeControl
     int reviseCounter;
     bool humanControl = false;
     Direction lastDirectionPicked = Direction.NODIRECTION;
-    CaseCBRv2 lastQuery = null;
     #endregion
     // Start is called before the first frame update
     protected override void Start()
     {
         base.Start();
         caseSerializer = new myCaseSerializer();
-        myBrain = new CBRBrain("Prueba1",caseSerializer,new myComparer(),0.95f,reuseAnswerType.mostVoted,5,new myCaseFitness(),customEvaluateCase);
+        myBrain = new CBRBrain("Prueba1",caseSerializer,new myComparer(),0.95f,reuseAnswerType.mostVoted,5,new myCaseFitness(),ReviseType.custom,customEvaluateCase);
         reviseCounter = 0;
     }
 
@@ -196,7 +195,7 @@ public class CBRContrSnake : SnakeControl
             List<Vector2> myList2 = new List<Vector2>(GameManager.Instance.getPlayer1Positions());
             query.setProperty("otherSnakePartsNode:vector2List", myList2);
             query.setProperty("otherSnakeDir:vector2", GameManager.Instance.getPlayer1Dir());
-            query.setProperty("LevelScore:float", GameManager.Instance.getPlayer2Score());
+            query.setProperty("levelScore:float", GameManager.Instance.getPlayer2Score());
         }
         
         myBrain.setWeigth("myPartsNodes", 0.25f);
@@ -214,10 +213,14 @@ public class CBRContrSnake : SnakeControl
 
     bool customEvaluateCase(CaseCBRv2 query, CaseCBRv2 futureQuery, System.Object[] myArgs)
     {
-        float score = caseScore(query, futureQuery);
-        query.setProperty("Score:float", score);
-        if (score >= 1) return true;
-        else return false;
+        if (!humanControl)
+        {
+            float score = caseScore(query, futureQuery);
+            query.setProperty("Score:float", score);
+            if (score >= 1) return true;
+            else return false;
+        }
+        else return true;
     }
 
     /// <summary>
@@ -257,17 +260,18 @@ public class CBRContrSnake : SnakeControl
         {
             for(int i = 0; i < 5; i++) // Mira en 5 casillas desde donde estoy
             {
-                if (GameManager.Instance.isThereSnake((int)(this.headNode.x + (this.myDirection.x * i)), (int)this.headNode.y, this.playerOne)) inTrackToCollision = true;
+                if ((this.headNode.x + this.myDirection.x * i) >= 29 || (this.headNode.x + this.myDirection.x * i) <= 0) inTrackToCollision = true;
+                else if (GameManager.Instance.isThereSnake((int)(this.headNode.x + (this.myDirection.x * i)), (int)this.headNode.y, this.playerOne)) inTrackToCollision = true;
             }
-            if((this.headNode.x + this.myDirection.x * 5)>=29 || (this.headNode.x + this.myDirection.x * 5) <= 0) inTrackToCollision = true;
+            
         }
         else
         {
             for (int i = 0; i < 5; i++) // Mira en 5 casillas desde donde estoy
             {
-                if (GameManager.Instance.isThereSnake((int)this.headNode.x, (int)(this.headNode.y + (this.myDirection.y * i)), this.playerOne)) inTrackToCollision = true;
+                if ((this.headNode.y + this.myDirection.y * 5) >= 18 || (this.headNode.y + this.myDirection.y * 5) <= 0) inTrackToCollision = true;
+                else if (GameManager.Instance.isThereSnake((int)this.headNode.x, (int)(this.headNode.y + (this.myDirection.y * i)), this.playerOne)) inTrackToCollision = true;
             }
-            if ((this.headNode.y + this.myDirection.y * 5) >= 18 || (this.headNode.y + this.myDirection.y * 5) <= 0) inTrackToCollision = true;
         }
         return inTrackToCollision;
     }

@@ -49,7 +49,7 @@ public class CBRBrain
     /// <param name="myFuncArgs"> Argumentos necesarios para la función lamda. Puede ser null si esta no los necesita</param>gs">
     /// <param name="type">Tipo de funcion que se va a usar para revisar el perfomance del caso y si se va a guardar</param>
     public CBRBrain(string CSVname,CaseSerializer mySerializer = null,CaseComparer myComparer = null, float similarityThreshold = 0, reuseAnswerType reuseType = reuseAnswerType.mostSimilar, int kNNRequired = 1, CaseFitness myFintess = null,
-         Func<CaseCBRv2,CaseCBRv2,System.Object[], bool> customReview = null,ReviseType type = ReviseType.alwaysRetain, System.Object[] customReviewArgs = null)
+         ReviseType type = ReviseType.alwaysRetain, Func<CaseCBRv2,CaseCBRv2,System.Object[], bool> customReview = null, System.Object[] customReviewArgs = null)
     {
         caseToSave = new List<CaseCBRv2>();
         readedCases = new List<CaseCBRv2>();
@@ -76,6 +76,8 @@ public class CBRBrain
     ~CBRBrain()
     {
         persistCases();
+        caseSerializer = null;
+        GC.Collect();
     }
     #region public
     /// <summary>
@@ -139,29 +141,32 @@ public class CBRBrain
     /// </summary>
     /// <param name="query">Caso presentado al sistema</param>
     /// <returns>Los kNN casos más prometedores, ordenados de más a menos prometedor</returns>
-    public SortedSet<Tuple<CaseCBRv2, float>> retrieveKNNCases(in CaseCBRv2 query)
+    public SortedSet<Tuple<CaseCBRv2, float>> retrieveKNNCases(in CaseCBRv2 query, float minSimil = 0)
     {
         SortedSet<Tuple<CaseCBRv2, float>> kNNCases = new SortedSet<Tuple<CaseCBRv2, float>>(fitness); // Ordenas por fitness
         foreach(CaseCBRv2 myCase in readedCases) 
         {
             Tuple<CaseCBRv2, float> myCaseWithSimil = comparer.computeSimilarity(query, myCase, weights);
-            if (kNNCases.Count < kNNRequired)
-            {
-                kNNCases.Add(myCaseWithSimil);
-            }
-            else
-            {
-                IEnumerator iterator = kNNCases.Reverse().GetEnumerator();
-                iterator.MoveNext(); // El elemento menos parecido o menos valioso
-
-                // Si el nuevo caso visto es mejor que el peor, borra el peor guardado y mete el nuevo
-                if (((Tuple<CaseCBRv2, float>)iterator.Current).Item2 < myCaseWithSimil.Item2) 
+            if (myCaseWithSimil.Item2 >= minSimil)
+            {// Tiene que ser mayor que la minima)
+                if (kNNCases.Count < kNNRequired)
                 {
-                    kNNCases.Remove((Tuple<CaseCBRv2, float>)iterator.Current);
                     kNNCases.Add(myCaseWithSimil);
                 }
+                else
+                {
+                    IEnumerator iterator = kNNCases.Reverse().GetEnumerator();
+                    iterator.MoveNext(); // El elemento menos parecido o menos valioso
+
+                    // Si el nuevo caso visto es mejor que el peor, borra el peor guardado y mete el nuevo
+                    if (((Tuple<CaseCBRv2, float>)iterator.Current).Item2 < myCaseWithSimil.Item2)
+                    {
+                        kNNCases.Remove((Tuple<CaseCBRv2, float>)iterator.Current);
+                        kNNCases.Add(myCaseWithSimil);
+                    }
+                }
+                if (similThresh > 0 && myCaseWithSimil.Item2 >= similThresh) possibleTwins.Add(myCaseWithSimil.Item1); // Si son muy parecidos, mira despues
             }
-            if(similThresh > 0 && myCaseWithSimil.Item2 >= similThresh) possibleTwins.Add(myCaseWithSimil.Item1); // Si son muy parecidos, mira despues
         }
         return kNNCases;
     }
@@ -181,7 +186,7 @@ public class CBRBrain
         {
             if (type == reuseAnswerType.mostVoted)
             {
-                Dictionary<System.Object, int> votes = new Dictionary<object, int>();
+                Dictionary<dynamic, int> votes = new Dictionary<dynamic, int>();
                 Tuple<dynamic, int> answer = null;
                 foreach (Tuple<CaseCBRv2, float> myCase in knnCases)
                 {
@@ -192,13 +197,11 @@ public class CBRBrain
                     else
                     {
                         votes[myCase.Item1.getAnswer()]++;
-                        if (answer.Item2 < votes[myCase.Item1.getAnswer()]) answer = new Tuple<dynamic, int>(myCase.Item1.getAnswer(), 1);
                     }
                 }
-                // TODO: votes.OrderByDescending(x => x.Value).First().Key
                 // Ordenar por votos y colocar la respuesta que mas votos reciba
-                query.setAnswer(answer.Item1);
-                return answer.Item1;
+                query.setAnswer(votes.OrderByDescending(x => x.Value).First().Key);
+                return query.getAnswer();
             }
             else if (type == reuseAnswerType.weighted)
             {
@@ -254,7 +257,6 @@ public class CBRBrain
     // se vacia en cada caso y que se rellena en el retrieve knn
     /// <summary>
     /// Añade el caso a la lista de casos por guardar y también a la base de datos para usar
-    /// DUDA: No se si hacer la lista de tamaño fijo e ir escribiendo casos periodicamente (flush) o escribirlos todos al final
     /// BASE: GUARDA AL FINAL
     /// UTILIDAD: GUARDAR CON UN BOTON
     /// </summary>
@@ -295,15 +297,17 @@ public class CBRBrain
     /// </summary>
     /// <param name="query">El caso presentado</param>
     /// <param name="myFunc">Funcion que realizar en caso de que los casos no presenten una solucion o no haya casos</param>
+    /// <param name="args">Argumentos necesarios para la función custom (puede ser nulo)</param>
+    /// <param name="minSimil">Número entre 0 y 1 de similitud mínima para utilizar un caso</param>
     /// <returns>La respuesta a ejecutar</returns>
-    public dynamic CBRCycle(CaseCBRv2 query, Func<System.Object[],dynamic> myFunc, System.Object[]args = null)
+    public dynamic CBRCycle(CaseCBRv2 query, Func<System.Object[],dynamic> myFunc, System.Object[]args = null, float minSimil = 0)
     {
         if(!normalizedWeights)
         {
             normalizeWeights();
             normalizedWeights = true;
         }
-        SortedSet<Tuple<CaseCBRv2, float>> caseSimil = retrieveKNNCases(query);
+        SortedSet<Tuple<CaseCBRv2, float>> caseSimil = retrieveKNNCases(query, minSimil);
         dynamic res = reuseCases(caseSimil, ref query,reuseAnswer);
         if (res == null) 
         {
