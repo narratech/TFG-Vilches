@@ -120,6 +120,7 @@ public class SnakeControl : MonoBehaviour
     /// </summary>
     protected void Move()
     {
+        List<Vector2> previousSnakePositions = new List<Vector2>(snakePositions);
         snakePositions.Clear();
         int nodeX = 17 + Mathf.RoundToInt(headPart.parte.transform.position.x); // Para que no se cambie la direccion hasta haber alcanzado el nodo
         int nodeY = 9 - Mathf.RoundToInt(headPart.parte.transform.position.z);
@@ -140,8 +141,15 @@ public class SnakeControl : MonoBehaviour
         snakePositions.Add(new Vector2(nodeX, nodeY));
         headNode = new Vector2(nodeX,nodeY);
 
-        if ((headNode.x <= 0 || headNode.x >= 29 ||
-                headNode.y <= 0 || headNode.y >= 18) || GameManager.Instance.isThereSnake((int)headNode.x,(int)headNode.y,playerOne)) // Si has perdido
+        bool eatedOwnBody = false;
+        int j = 1;
+        while(!eatedOwnBody && j < previousSnakePositions.Count)
+        {
+            if (previousSnakePositions[j] == headNode) eatedOwnBody = true;
+            else j++;
+        }
+        if (eatedOwnBody || (headNode.x <= 0 || headNode.x >= 29 ||
+        headNode.y <= 0 || headNode.y >= 18) || GameManager.Instance.isThereSnake((int)headNode.x, (int)headNode.y, playerOne)) // Si has perdido
         {
             GameManager.Instance.lostGame(playerOne);
             return;

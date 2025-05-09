@@ -234,7 +234,7 @@ public class CBRContrSnake : SnakeControl
     {
         int score = 0;
 
-        if (query.getProperty("levelScore").Count > futureQuery.getProperty("levelScore")) // Se ha reiniciado el nivel
+        if (query.getProperty("levelScore") > futureQuery.getProperty("levelScore")) // Se ha reiniciado el nivel
             score -= 100; // Creo que no se usa nunca porque al retry se borran los que estaban en evaluación pero jsutamente por eso no se guardan si mueres
         if (query.getProperty("myPartsNodes").Count < futureQuery.getProperty("myPartsNodes").Count) // Se ha comido fruta
             score += 10;

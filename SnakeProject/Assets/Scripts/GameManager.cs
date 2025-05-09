@@ -64,7 +64,7 @@ public class GameManager : MonoBehaviour
                 int nodeX = 17 + i;
                 int nodeY = -9 - j;
                 myNodos[nodeX, nodeY] = new NodeInfo(false,false, new Vector3(i, 0, 18 + j));
-                if(i !=-16 && i != 11 && j != -9 && j != -27)
+                if(i >=-16 && i <= 11 && j <= -8 && j >= -26)
                 {
                     freeNodes.Add(new Vector2(nodeX, nodeY));
                 }
@@ -182,12 +182,12 @@ public class GameManager : MonoBehaviour
         return keepPlaying;
     }
 
-    public int getPlayer1Score()
+    public float getPlayer1Score()
     {
         return player1Score;
     }
 
-    public int getPlayer2Score()
+    public float getPlayer2Score()
     {
         return player2Score;
     }

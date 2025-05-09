@@ -342,7 +342,7 @@ public class CBRBrain
     }
     public void persistCases()
     {
-        caseSerializer.writeCases(CSVname, caseToSave);
+        if(caseToSave.Count > 0)caseSerializer.writeCases(CSVname, caseToSave);
     }
     #endregion
 }
