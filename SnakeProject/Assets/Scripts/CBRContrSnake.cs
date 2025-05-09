@@ -239,12 +239,17 @@ public class CBRContrSnake : SnakeControl
         if (query.getProperty("myPartsNodes").Count < futureQuery.getProperty("myPartsNodes").Count) // Se ha comido fruta
             score += 10;
         if (query.getProperty("inTrackToCollide")) //Mirar la distancia hacia la pared que esta mirando(Escalar recompensa con dsitancia
-        { if (futureQuery.getProperty("inTrackToCollide"))
+        { if (!futureQuery.getProperty("inTrackToCollide"))
                 score += 4;
+        }
+        if (!query.getProperty("inTrackToCollide")) //Mirar la distancia hacia la pared que esta mirando(Escalar recompensa con dsitancia
+        {
+            if (futureQuery.getProperty("inTrackToCollide"))
+                score -= 2;
         }
 
         float distanceBefore = (Math.Abs(query.getProperty("headDirection").x - query.getProperty("fruitPos").x) + Math.Abs(query.getProperty("headDirection").z - query.getProperty("fruitPos").y));
-        float distanceAfter = (Math.Abs(query.getProperty("headDirection").x - query.getProperty("fruitPos").x) + Math.Abs(query.getProperty("headDirection").z - query.getProperty("fruitPos").y));
+        float distanceAfter = (Math.Abs(futureQuery.getProperty("headDirection").x - futureQuery.getProperty("fruitPos").x) + Math.Abs(futureQuery.getProperty("headDirection").z - futureQuery.getProperty("fruitPos").y));
 
         if (distanceAfter < distanceBefore)
             score += 2;

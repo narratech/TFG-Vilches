@@ -46,7 +46,7 @@ public class CBRBrain
     /// <param name="kNNRequired">Numero de casos que se recuperan para la respuesta</param>
     /// <param name="myComparer">Comparador para decidir como se computa la similiritud de los casos</param>
     /// <param name="customReview">Función lambda para la revisión custom. Puede ser null si se va con la por defecto</param>
-    /// <param name="myFuncArgs"> Argumentos necesarios para la función lamda. Puede ser null si esta no los necesita</param>gs">
+    /// <param name="customReviewArgs"> Argumentos necesarios para la función lamda. Puede ser null si esta no los necesita</param>gs">
     /// <param name="type">Tipo de funcion que se va a usar para revisar el perfomance del caso y si se va a guardar</param>
     public CBRBrain(string CSVname,CaseSerializer mySerializer = null,CaseComparer myComparer = null, float similarityThreshold = 0, reuseAnswerType reuseType = reuseAnswerType.mostSimilar, int kNNRequired = 1, CaseFitness myFintess = null,
          ReviseType type = ReviseType.alwaysRetain, Func<CaseCBRv2,CaseCBRv2,System.Object[], bool> customReview = null, System.Object[] customReviewArgs = null)
