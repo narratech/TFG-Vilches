@@ -5,17 +5,28 @@ using System.Linq;
 using System.Xml.Linq;
 using UnityEngine;
 
+public struct CaseWithSimilarity
+{
+    public CaseCBRv2 myCase;
+    public float similarity;
+    public CaseWithSimilarity(CaseCBRv2 cas,float sim)
+    {
+        myCase = cas;
+        similarity = sim;
+    }
+}
+
 /// <summary>
 /// Comparador de orden para los casos en la lista de KNN. Es como un Score general del caso (similaritud solo,
 /// mezcla de similaritud y fitness, etc..)
 /// </summary>
-public class CaseFitness : IComparer<Tuple<CaseCBRv2, float>>
+public class CaseFitness : IComparer<CaseWithSimilarity>
 {
     // Compara el score del caso y su similitud.
-    public virtual int Compare(Tuple<CaseCBRv2, float> x, Tuple<CaseCBRv2, float> y)
+    public virtual int Compare(CaseWithSimilarity x, CaseWithSimilarity y)
     {
-        double actualValueX = x.Item2;
-        double actualValueY = y.Item2;
+        double actualValueX = x.similarity;
+        double actualValueY = y.similarity;
         if (actualValueX > actualValueY)
         {
             return -1;

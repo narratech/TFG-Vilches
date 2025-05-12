@@ -21,7 +21,7 @@ public interface CaseComparer
     /// <param name="caseToLook">El caso a comparar</param>
     /// <param name="weigths">Diccionario con los pesos de cada variable, asignados en el cbrBrain</param>
     /// <returns>La tupla con el caso a comparar y su similitud con el presentado</returns>
-    public abstract Tuple<CaseCBRv2, float> computeSimilarity(in CaseCBRv2 query, in CaseCBRv2 caseToLook, Dictionary<string, float> weigths);
+    public abstract CaseWithSimilarity computeSimilarity(in CaseCBRv2 query, in CaseCBRv2 caseToLook, Dictionary<string, float> weigths);
 }
 public class CaseCBRv2
 {

@@ -121,6 +121,8 @@ m_ResolvedPackages:
     - 2.5.2
     - 2.6.0
     - 2.7.1
+    - 2.8.1
+    - 2.8.2
     compatible:
     - 2.4.3
     - 2.4.4
@@ -128,6 +130,8 @@ m_ResolvedPackages:
     - 2.5.2
     - 2.6.0
     - 2.7.1
+    - 2.8.1
+    - 2.8.2
     recommended: 2.4.4
     deprecated: []
   dependencies: []
@@ -361,11 +365,13 @@ m_ResolvedPackages:
     - 3.0.31
     - 3.0.34
     - 3.0.35
+    - 3.0.36
     compatible:
     - 3.0.31
     - 3.0.34
     - 3.0.35
-    recommended: 3.0.35
+    - 3.0.36
+    recommended: 3.0.36
     deprecated: []
   dependencies:
   - name: com.unity.ext.nunit
@@ -3311,6 +3317,7 @@ m_ResolvedPackages:
     - 7.1.0
     - 7.1.1
     - 7.1.2
+    - 7.2.0
     - 8.0.0-pre.3
     - 8.0.0-pre.4
     - 8.0.0
@@ -3583,6 +3590,7 @@ m_ResolvedPackages:
     - 6.0.7
     - 6.0.8
     - 6.0.9
+    - 6.1.0
     - 7.0.0-pre.3
     - 7.0.0-pre.4
     - 7.0.0
@@ -3826,6 +3834,7 @@ m_ResolvedPackages:
     - 7.0.5
     - 7.0.6
     - 7.0.7
+    - 7.1.0
     - 8.0.0-pre.4
     - 8.0.0-pre.5
     - 8.0.0
@@ -4162,17 +4171,20 @@ m_ResolvedPackages:
     - 1.1.6
     - 1.1.7
     - 1.1.8
+    - 1.1.9
     - 1.2.0
     - 1.2.1
     - 1.2.2
     - 1.2.3
+    - 1.2.4
     compatible:
     - 1.1.4
     - 1.1.5
     - 1.1.6
     - 1.1.7
     - 1.1.8
-    recommended: 1.1.8
+    - 1.1.9
+    recommended: 1.1.9
     deprecated: []
   dependencies:
   - name: com.unity.2d.common
@@ -4293,6 +4305,7 @@ m_ResolvedPackages:
     - 6.0.6
     - 6.0.7
     - 6.0.8
+    - 6.1.0
     - 7.0.0-pre.3
     - 7.0.0-pre.4
     - 7.0.0
@@ -4318,6 +4331,7 @@ m_ResolvedPackages:
     - 9.0.6
     - 9.0.7
     - 9.1.0
+    - 11.0.0
     compatible:
     - 8.0.3
     - 8.0.4
@@ -4552,6 +4566,7 @@ m_ResolvedPackages:
     - 2.5.1
     - 2.5.2
     - 2.5.3
+    - 2.5.7
     - 2.6.0-exp.2
     compatible:
     - 1.2.4
@@ -4582,8 +4597,9 @@ m_ResolvedPackages:
     - 2.5.1
     - 2.5.2
     - 2.5.3
+    - 2.5.7
     - 2.6.0-exp.2
-    recommended: 2.5.3
+    recommended: 2.5.7
     deprecated: []
   dependencies:
   - name: com.unity.burst
@@ -4789,12 +4805,16 @@ m_ResolvedPackages:
     - 1.8.17
     - 1.8.18
     - 1.8.19
+    - 1.8.20
+    - 1.8.21
     compatible:
     - 1.8.16
     - 1.8.17
     - 1.8.18
     - 1.8.19
-    recommended: 1.8.19
+    - 1.8.20
+    - 1.8.21
+    recommended: 1.8.21
     deprecated: []
   dependencies:
   - name: com.unity.mathematics

@@ -39,7 +39,7 @@ class myCaseSerializer: CaseSerializer
 //Hacer tmb un case comparer que mire el score de la serpiente tras 5 nodos
 class myComparer : CaseComparer
 {
-    public Tuple<CaseCBRv2, float> computeSimilarity(in CaseCBRv2 query, in CaseCBRv2 caseToLook, Dictionary<string, float> weigths)
+    public CaseWithSimilarity computeSimilarity(in CaseCBRv2 query, in CaseCBRv2 caseToLook, Dictionary<string, float> weigths)
     {
         float maxDistance = (Math.Abs(0 - 30) + Math.Abs(0 - 19));
         float similarity = 0;
@@ -59,16 +59,16 @@ class myComparer : CaseComparer
           caseToLook.getProperty("otherSnakePartsNode"), maxDistance) * weigths["otherSnakePartsNode"];
         similarity += CaseUtility.computeFloatListSimilarity(query.getProperty("DistanceToWalls"), caseToLook.getProperty("DistanceToWalls"),maxDistance);
 
-        return new Tuple<CaseCBRv2,float>(caseToLook, similarity);
+        return new CaseWithSimilarity(caseToLook, similarity);
     }
 }
 
 class myCaseFitness : CaseFitness
 {
-    public override int Compare(Tuple<CaseCBRv2, float> x, Tuple<CaseCBRv2, float> y)
+    public override int Compare(CaseWithSimilarity x, CaseWithSimilarity y)
     {
-        double actualValueX = x.Item2 * 0.8 + (x.Item1.getProperty("Score") / 100) * 0.2;
-        double actualValueY = y.Item2 * 0.8 + (y.Item1.getProperty("Score") / 100)*0.2;
+        double actualValueX = x.similarity * 0.8 + (x.myCase.getProperty("Score") / 100) * 0.2;
+        double actualValueY = y.similarity * 0.8 + (y.myCase.getProperty("Score") / 100)*0.2;
         // TODO: Calcular el score y ver cuanto afecta a la elección
         if (actualValueX > actualValueY)
         {

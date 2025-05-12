@@ -140,14 +140,15 @@ public class CBRBrain
     /// (Parecidos o mejores, según ponderación del usuario)
     /// </summary>
     /// <param name="query">Caso presentado al sistema</param>
+    /// <param name="minFitness">Aptitud minima para elegir un caso</param>
     /// <returns>Los kNN casos más prometedores, ordenados de más a menos prometedor</returns>
-    public SortedSet<Tuple<CaseCBRv2, float>> retrieveKNNCases(in CaseCBRv2 query, float minSimil = 0)
+    public SortedSet<CaseWithSimilarity> retrieveKNNCases(in CaseCBRv2 query, float minFitness = 0)
     {
-        SortedSet<Tuple<CaseCBRv2, float>> kNNCases = new SortedSet<Tuple<CaseCBRv2, float>>(fitness); // Ordenas por fitness
+        SortedSet<CaseWithSimilarity> kNNCases = new SortedSet<CaseWithSimilarity>(fitness); // Ordenas por fitness
         foreach(CaseCBRv2 myCase in readedCases) 
         {
-            Tuple<CaseCBRv2, float> myCaseWithSimil = comparer.computeSimilarity(query, myCase, weights);
-            if (myCaseWithSimil.Item2 >= minSimil)
+            CaseWithSimilarity myCaseWithSimil = comparer.computeSimilarity(query, myCase, weights);
+            if (myCaseWithSimil.similarity >= minFitness)
             {// Tiene que ser mayor que la minima)
                 if (kNNCases.Count < kNNRequired)
                 {
@@ -159,13 +160,13 @@ public class CBRBrain
                     iterator.MoveNext(); // El elemento menos parecido o menos valioso
 
                     // Si el nuevo caso visto es mejor que el peor, borra el peor guardado y mete el nuevo
-                    if (((Tuple<CaseCBRv2, float>)iterator.Current).Item2 < myCaseWithSimil.Item2)
+                    if (((CaseWithSimilarity)iterator.Current).similarity < myCaseWithSimil.similarity)
                     {
-                        kNNCases.Remove((Tuple<CaseCBRv2, float>)iterator.Current);
+                        kNNCases.Remove((CaseWithSimilarity)iterator.Current);
                         kNNCases.Add(myCaseWithSimil);
                     }
                 }
-                if (similThresh > 0 && myCaseWithSimil.Item2 >= similThresh) possibleTwins.Add(myCaseWithSimil.Item1); // Si son muy parecidos, mira despues
+                if (similThresh > 0 && myCaseWithSimil.similarity >= similThresh) possibleTwins.Add(myCaseWithSimil.myCase); // Si son muy parecidos, mira despues
             }
         }
         return kNNCases;
@@ -180,7 +181,7 @@ public class CBRBrain
     /// <param name="knnCases">Los casos más prometedores de los que escoger</param>
     /// <param name="query">El caso presentado que se va a generar</param>
     /// <returns>El resultado a utilizar en el juego</returns>
-    public dynamic reuseCases(in SortedSet<Tuple<CaseCBRv2, float>> knnCases, ref CaseCBRv2 query, reuseAnswerType type)
+    public dynamic reuseCases(in SortedSet<CaseWithSimilarity> knnCases, ref CaseCBRv2 query, reuseAnswerType type)
     {
         if (knnCases.Count > 0)
         {
@@ -188,15 +189,15 @@ public class CBRBrain
             {
                 Dictionary<dynamic, int> votes = new Dictionary<dynamic, int>();
                 Tuple<dynamic, int> answer = null;
-                foreach (Tuple<CaseCBRv2, float> myCase in knnCases)
+                foreach (CaseWithSimilarity myCase in knnCases)
                 {
-                    if (!votes.ContainsKey(myCase.Item1.getAnswer()))
+                    if (!votes.ContainsKey(myCase.myCase.getAnswer()))
                     {
-                        votes.Add(myCase.Item1.getAnswer(), 1);
+                        votes.Add(myCase.myCase.getAnswer(), 1);
                     }
                     else
                     {
-                        votes[myCase.Item1.getAnswer()]++;
+                        votes[myCase.myCase.getAnswer()]++;
                     }
                 }
                 // Ordenar por votos y colocar la respuesta que mas votos reciba
@@ -207,18 +208,18 @@ public class CBRBrain
             {
                 Dictionary<System.Object, int> votes = new Dictionary<object, int>();
                 Tuple<dynamic, int> answer = null;
-                foreach (Tuple<CaseCBRv2, float> myCase in knnCases)
+                foreach (CaseWithSimilarity myCase in knnCases)
                 {
                     if (!votes.ContainsKey(query.getAnswer()))
                     {
-                        votes.Add(myCase.Item1.getAnswer(), myCase.Item1.getWeight());
-                        if (answer == null) answer = new Tuple<dynamic, int>(myCase.Item1.getAnswer(), myCase.Item1.getWeight());
+                        votes.Add(myCase.myCase.getAnswer(), myCase.myCase.getWeight());
+                        if (answer == null) answer = new Tuple<dynamic, int>(myCase.myCase.getAnswer(), myCase.myCase.getWeight());
                     }
                     else
                     {
-                        votes[myCase.Item1.getAnswer()] += myCase.Item1.getWeight();
-                        if (answer.Item2 < votes[myCase.Item1.getAnswer()])
-                            answer = new Tuple<dynamic, int>(myCase.Item1.getAnswer(), votes[myCase.Item1.getAnswer()]);
+                        votes[myCase.myCase.getAnswer()] += myCase.myCase.getWeight();
+                        if (answer.Item2 < votes[myCase.myCase.getAnswer()])
+                            answer = new Tuple<dynamic, int>(myCase.myCase.getAnswer(), votes[myCase.myCase.getAnswer()]);
                     }
                 }
                 query.setAnswer(answer.Item1);
@@ -228,8 +229,8 @@ public class CBRBrain
             {
                 IEnumerator iterator = knnCases.GetEnumerator();
                 iterator.MoveNext(); // El elemento más prometedor 
-                query.setAnswer(((Tuple<CaseCBRv2, float>)iterator.Current).Item1.getAnswer());
-                return ((Tuple<CaseCBRv2, float>)iterator.Current).Item1.getAnswer(); // Supongo que, al ser en tiempo de ejecucion, esto se resolvera solo
+                query.setAnswer(((CaseWithSimilarity)iterator.Current).myCase.getAnswer());
+                return ((CaseWithSimilarity)iterator.Current).myCase.getAnswer(); // Supongo que, al ser en tiempo de ejecucion, esto se resolvera solo
             }
         }
         else return null;
@@ -298,16 +299,16 @@ public class CBRBrain
     /// <param name="query">El caso presentado</param>
     /// <param name="myFunc">Funcion que realizar en caso de que los casos no presenten una solucion o no haya casos</param>
     /// <param name="args">Argumentos necesarios para la función custom (puede ser nulo)</param>
-    /// <param name="minSimil">Número entre 0 y 1 de similitud mínima para utilizar un caso</param>
+    /// <param name="minFitness">Número entre 0 y 1 de aptitud mínima para utilizar un caso (Puede ser solo similitud)</param>
     /// <returns>La respuesta a ejecutar</returns>
-    public dynamic CBRCycle(CaseCBRv2 query, Func<System.Object[],dynamic> myFunc, System.Object[]args = null, float minSimil = 0)
+    public dynamic CBRCycle(CaseCBRv2 query, Func<System.Object[],dynamic> myFunc, System.Object[]args = null, float minFitness = 0)
     {
         if(!normalizedWeights)
         {
             normalizeWeights();
             normalizedWeights = true;
         }
-        SortedSet<Tuple<CaseCBRv2, float>> caseSimil = retrieveKNNCases(query, minSimil);
+        SortedSet<CaseWithSimilarity> caseSimil = retrieveKNNCases(query, minFitness);
         dynamic res = reuseCases(caseSimil, ref query,reuseAnswer);
         if (res == null) 
         {
