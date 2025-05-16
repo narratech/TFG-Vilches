@@ -117,7 +117,7 @@ public class CBRBrain
     {
         return weights;
     }
-    protected void normalizeWeights()
+    private void normalizeWeights()
     {
         float sum = 0;
         Dictionary<string, float>.Enumerator it = weights.GetEnumerator();
