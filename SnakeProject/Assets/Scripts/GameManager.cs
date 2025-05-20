@@ -173,10 +173,12 @@ public class GameManager : MonoBehaviour
     }
     public void OnRetryReset()
     {
-        UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(0);
-        UnityEngine.SceneManagement.SceneManager.LoadScene(0); // Recarga la escena
+        //UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(0);
+        //UnityEngine.SceneManagement.SceneManager.LoadScene(0); // Recarga la escena
+        UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
         // DUDA: Reiniciar puntuacion
     }
+
     public bool getKeepPlaying()
     {
         return keepPlaying;
