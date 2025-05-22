@@ -52,10 +52,6 @@ public class GameManager : MonoBehaviour
     private int player1Score;
     private int player2Score;
 
-    private Vector3 savedPositionPlayer1;
-    private Quaternion savedRotationPlayer1;
-    private Vector3 savedPositionPlayer2;
-    private Quaternion savedRotationPlayer2;
 
     private void Awake()
     {
@@ -64,10 +60,6 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        savedPositionPlayer1 = player1.transform.position;
-        savedRotationPlayer1 = player1.transform.rotation;
-        savedPositionPlayer2 = player2.transform.position;
-        savedRotationPlayer2 = player2.transform.rotation;
         freeNodes = new List<Vector2>();
         myNodos = new NodeInfo[30, 19];
         for (int i = -17; i < 13; i++)

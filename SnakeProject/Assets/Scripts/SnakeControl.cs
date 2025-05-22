@@ -72,6 +72,7 @@ public class SnakeControl : MonoBehaviour
         headPart = new BodyPart(new Vector3(playerOne ? 1 : -1, 0, 0), headPartObj);
         tailPart = new BodyPart(new Vector3(playerOne ? 1 : -1, 0, 0), tailPartObj);
         bodyParts.Add(new BodyPart(new Vector3(playerOne ? 1 : -1, 0, 0), bodyPartObj));
+        myDirection = new Vector3(playerOne ? 1 : -1, 0, 0);       
         snakePositions = new List<Vector2>();
         // La x total mide 26 nodos, empezando en -16 <-> 11 /-17 y 12 son limites
         // La y total mide 19 nodos empezando en 8 <-> -8 / 9 y -9 son limites
@@ -118,12 +119,9 @@ public class SnakeControl : MonoBehaviour
         {
             Destroy(bodyParts[i].parte);
         }
-        headPart.parte.transform.position = headStartPos;
-        headPart.parte.transform.rotation = headStartRot;
-        bodyParts[0].parte.transform.position = bodyStartPos;
-        bodyParts[0].parte.transform.rotation = bodyStartRot;
-        tailPart.parte.transform.position = tailStartPos;
-        tailPart.parte.transform.rotation = tailStartRot;
+        headPart.parte.transform.SetPositionAndRotation(headStartPos,headStartRot);
+        bodyParts[0].parte.transform.SetPositionAndRotation(bodyStartPos, bodyStartRot);
+        tailPart.parte.transform.SetPositionAndRotation(tailStartPos, tailStartRot);
     }
     /// <summary>
     /// Utilidad para pasar de posiciones reales a nodo Y
