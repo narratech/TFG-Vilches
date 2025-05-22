@@ -32,6 +32,10 @@ public class GameManager : MonoBehaviour
     private GameObject fruit;
     private Vector2 fruitNode;
     [SerializeField]
+    private GameObject player1Prefab;
+    [SerializeField]
+    private GameObject player2Prefab;
+    [SerializeField]
     private GameObject player1;
     private List<Vector2> player1Nodes;
     private Vector2 player1Dir;
@@ -48,6 +52,11 @@ public class GameManager : MonoBehaviour
     private int player1Score;
     private int player2Score;
 
+    private Vector3 savedPositionPlayer1;
+    private Quaternion savedRotationPlayer1;
+    private Vector3 savedPositionPlayer2;
+    private Quaternion savedRotationPlayer2;
+
     private void Awake()
     {
         if(Instance == null) Instance = this;
@@ -55,6 +64,10 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        savedPositionPlayer1 = player1.transform.position;
+        savedRotationPlayer1 = player1.transform.rotation;
+        savedPositionPlayer2 = player2.transform.position;
+        savedRotationPlayer2 = player2.transform.rotation;
         freeNodes = new List<Vector2>();
         myNodos = new NodeInfo[30, 19];
         for (int i = -17; i < 13; i++)
@@ -173,10 +186,17 @@ public class GameManager : MonoBehaviour
     }
     public void OnRetryReset()
     {
-        //UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(0);
-        //UnityEngine.SceneManagement.SceneManager.LoadScene(0); // Recarga la escena
-        UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
-        // DUDA: Reiniciar puntuacion
+        player1.GetComponent<SnakeControl>().onResetTry();
+        player2.GetComponent<SnakeControl>().onResetTry();
+        Destroy(instantiatedFruit);
+        player1Score = 0; // A lo mejor mantengo puntuaciones y resto y sumo 200 segun quien gane
+        player2Score = 0;
+        GuiManager.GetComponent<GUIManager>().OnRetryReset();
+        this.Start();
+        player1.GetComponent<SnakeControl>().Awake();
+        player2.GetComponent<SnakeControl>().Awake();
+        player1.GetComponent<SnakeControl>().Start();
+        player2.GetComponent<SnakeControl>().Start();
     }
 
     public bool getKeepPlaying()

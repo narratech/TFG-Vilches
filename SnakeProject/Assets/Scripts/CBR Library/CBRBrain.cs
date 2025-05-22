@@ -73,12 +73,6 @@ public class CBRBrain
         this.reuseAnswer = reuseType;
         this.normalizedWeights = false;
     }
-    ~CBRBrain()
-    {
-        persistCases();
-        caseSerializer = null;
-        GC.Collect();
-    }
     #region public
     /// <summary>
     /// Añade un valor al peso de una caracteristica y se normaliza
@@ -191,6 +185,10 @@ public class CBRBrain
                 Tuple<dynamic, int> answer = null;
                 foreach (CaseWithSimilarity myCase in knnCases)
                 {
+                    if(myCase.myCase.getAnswer()==null)
+                    {
+                        Debug.Log("WHAT THE FUCK");
+                    }
                     if (!votes.ContainsKey(myCase.myCase.getAnswer()))
                     {
                         votes.Add(myCase.myCase.getAnswer(), 1);
@@ -274,21 +272,19 @@ public class CBRBrain
                 if (possibleTwins[i].getAnswer() == myCase.getAnswer()) // Si has encontrado un gemelo, sumale peso en vez de guardarlo
                 {
                     matchFound = true;
-                    CaseCBRv2 match = readedCases.Find(x => x == possibleTwins[i]);
-                    match.setWeight(match.getWeight()+1);
+                    int match = readedCases.IndexOf(possibleTwins[i]);
+                    readedCases[match].setWeight(readedCases[match].getWeight() + 1);
                 }
                 i++;
             }
             if (!matchFound)
             {
                 caseToSave.Add(myCase);
-                readedCases.Add(myCase);
             }
         }
         else
         {
             caseToSave.Add(myCase);
-            readedCases.Add(myCase);
         }
     }
     #endregion
@@ -343,6 +339,7 @@ public class CBRBrain
     }
     public void persistCases()
     {
+        if (readedCases.Count > 0) caseSerializer.writeCases(CSVname, readedCases, true);
         if(caseToSave.Count > 0)caseSerializer.writeCases(CSVname, caseToSave);
     }
     #endregion

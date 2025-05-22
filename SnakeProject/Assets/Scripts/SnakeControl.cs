@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class SnakeControl : MonoBehaviour
@@ -48,11 +49,24 @@ public class SnakeControl : MonoBehaviour
     protected float speed;
     protected List<Vector2> snakePositions;
 
-
-
+    protected Vector3 headStartPos;
+    protected Quaternion headStartRot;
+    protected Vector3 bodyStartPos;
+    protected Quaternion bodyStartRot;
+    protected Vector3 tailStartPos;
+    protected Quaternion tailStartRot;
 
     // Start is called before the first frame update
-    protected virtual void Start()
+    public void Awake()
+    {
+        headStartPos = headPartObj.transform.position;
+        headStartRot = headPartObj.transform.rotation;
+        bodyStartPos = bodyPartObj.transform.position;
+        bodyStartRot = bodyPartObj.transform.rotation;
+        tailStartPos = tailPartObj.transform.position;
+        tailStartRot = tailPartObj.transform.rotation;
+    }
+    public virtual void Start() 
     {
         bodyParts = new List<BodyPart>();
         headPart = new BodyPart(new Vector3(playerOne ? 1 : -1, 0, 0), headPartObj);
@@ -75,15 +89,18 @@ public class SnakeControl : MonoBehaviour
 
         int X = 17 + Mathf.RoundToInt(headPart.parte.transform.position.x); // Para que no se cambie la direccion hasta haber alcanzado el nodo
         int Y = 9 - Mathf.RoundToInt(headPart.parte.transform.position.z);
+
         snakePositions.Add(new Vector2(X, Y));
         for (int i = 0; i < bodyParts.Count; i++)
         {
             X = 17 + Mathf.RoundToInt(bodyParts[i].parte.transform.position.x);
             Y = 9 - Mathf.RoundToInt(bodyParts[i].parte.transform.position.z);
             snakePositions.Add(new Vector2(X, Y));
+            
         }
         X = 17 + Mathf.RoundToInt(tailPart.parte.transform.position.x);
         Y = 9 - Mathf.RoundToInt(tailPart.parte.transform.position.z);
+
         snakePositions.Add(new Vector2(X, Y));
         if(playerOne)GameManager.Instance.setPlayer1Positions(snakePositions);
         else GameManager.Instance.setPlayer2Positions(snakePositions);
@@ -94,6 +111,19 @@ public class SnakeControl : MonoBehaviour
     protected virtual void Update()
     {
         elapsedTime += Time.deltaTime;
+    }
+    public virtual void onResetTry()
+    {
+        for (int i = 1; i < bodyParts.Count; i++)
+        {
+            Destroy(bodyParts[i].parte);
+        }
+        headPart.parte.transform.position = headStartPos;
+        headPart.parte.transform.rotation = headStartRot;
+        bodyParts[0].parte.transform.position = bodyStartPos;
+        bodyParts[0].parte.transform.rotation = bodyStartRot;
+        tailPart.parte.transform.position = tailStartPos;
+        tailPart.parte.transform.rotation = tailStartRot;
     }
     /// <summary>
     /// Utilidad para pasar de posiciones reales a nodo Y

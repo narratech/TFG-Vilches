@@ -206,19 +206,20 @@ public class CaseSerializer
     /// Se encarga de escribir los casos al CSV. Para añadir escritura de tipos no soportados, basta con agregarle un método
     /// serializeVariable(tipo consumido) y la persistencia se hace sola. El formato de serialización debe ser igual que el de deserializacion
     /// </summary>
-    /// <param name="CSVname"></param>
-    /// <param name="caseToSave"></param>
-    public virtual void writeCases(string CSVname, List<CaseCBRv2>caseToSave)
+    /// <param name="CSVname">Nombre de la base de casos</param>
+    /// <param name="caseToSave">Casos para escribir</param>
+    /// <param name="ignoreExisting">Ignora si existia antes una base de casos</param>
+    public virtual void writeCases(string CSVname, List<CaseCBRv2>caseToSave, bool ignoreExisting = false)
     {
         string filePath = "CaseBase/" + CSVname + ".csv";
 
         bool existedBefore = true;
         int id = 0;
         if (!Directory.Exists("CaseBase")) Directory.CreateDirectory("CaseBase");
-        if (!File.Exists(filePath)) existedBefore = false;
-        else id = casesCount; //Las id de los nuevos casos que no estan escritos
+        if (!File.Exists(filePath) || ignoreExisting) existedBefore = false;
+        else if(existedBefore) id = casesCount; //Las id de los nuevos casos que no estan escritos
 
-        using (StreamWriter myWriter = new StreamWriter(filePath, true))
+        using (StreamWriter myWriter = new StreamWriter(filePath, existedBefore))
         {
             if (!existedBefore)
             {
@@ -251,7 +252,11 @@ public class CaseSerializer
             string name = variablesTypes[i].Split(":")[0];
             string type = variablesTypes[i].Split(":")[1];
             if (name != "answer" && name != "weight") myCase.setProperty(variablesTypes[i], unserializeVariable(values[i], type));
-            else if (name == "answer") myCase.setAnswer(unserializeVariable(values[i], type));
+            else if (name == "answer")
+            {
+                myCase.setAnswer(unserializeVariable(values[i], type));
+                myCase.setAnswerType(type);
+            }
             else if (name == "weight") myCase.setWeight((int)unserializeVariable(values[i], type));
             else return null;
         }

@@ -34,7 +34,7 @@ public class GUIManager : MonoBehaviour
     }
     public void ChangeP2Points(int points)
     {
-        pointsPlayer1.GetComponent<TextMeshProUGUI>().SetText(points.ToString());
+        pointsPlayer2.GetComponent<TextMeshProUGUI>().SetText(points.ToString());
     }
     public void ShowWinText(bool isPlayerOne)
     {

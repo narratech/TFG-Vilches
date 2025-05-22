@@ -92,11 +92,11 @@ public class CBRContrSnake : SnakeControl
     Direction lastDirectionPicked = Direction.NODIRECTION;
     #endregion
     // Start is called before the first frame update
-    protected override void Start()
+    public override void Start()
     {
         base.Start();
         caseSerializer = new myCaseSerializer();
-        myBrain = new CBRBrain("Prueba1",caseSerializer,new myComparer(),0.95f,reuseAnswerType.mostVoted,5,new myCaseFitness(),ReviseType.custom,customEvaluateCase);
+        myBrain = new CBRBrain("Prueba1",caseSerializer,new myComparer(),0.85f,reuseAnswerType.mostVoted,5,new myCaseFitness(),ReviseType.custom,customEvaluateCase);
         reviseCounter = 0;
     }
 
@@ -130,6 +130,11 @@ public class CBRContrSnake : SnakeControl
             }
             
         }
+    }
+    public override void onResetTry()
+    {
+        myBrain.persistCases();
+        base.onResetTry();
     }
 
     void HandleInput()
@@ -198,13 +203,13 @@ public class CBRContrSnake : SnakeControl
             query.setProperty("levelScore:float", GameManager.Instance.getPlayer2Score());
         }
         
-        myBrain.setWeigth("myPartsNodes", 0.25f);
-        myBrain.setWeigth("otherSnakePartsNode", 0.25f);
+        myBrain.setWeigth("myPartsNodes", 0.2f);
+        myBrain.setWeigth("otherSnakePartsNode", 0.2f);
         myBrain.setWeigth("otherSnakeDir", 0.05f);
         query.setProperty("fruitPos:vector2", GameManager.Instance.getFruitNode());
-        myBrain.setWeigth("fruitPos", 0.1f);
+        myBrain.setWeigth("fruitPos", 0.15f);
         query.setProperty("inTrackToCollide:bool", inTrackToCollision());
-        myBrain.setWeigth("inTrackToCollide", 0.05f);
+        myBrain.setWeigth("inTrackToCollide", 0.1f);
 
         return query;
 

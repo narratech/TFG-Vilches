@@ -451,6 +451,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8736777819488587908}
+  - component: {fileID: 6767647435654172828}
   m_Layer: 0
   m_Name: Snake
   m_TagString: Untagged
@@ -476,6 +477,24 @@ Transform:
   - {fileID: 1041186361311532928}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6767647435654172828
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3924440162057694374}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0da87c78c0674f54d8fc8e0106b0de03, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  myDirection: {x: 1, y: 0, z: 0}
+  playerOne: 1
+  headPartObj: {fileID: 2962812893649159448}
+  bodyPartObj: {fileID: 1041186361311431584}
+  tailPartObj: {fileID: 8286832158434479370}
+  speed: 5
 --- !u!1 &8286832158434479368
 GameObject:
   m_ObjectHideFlags: 0
