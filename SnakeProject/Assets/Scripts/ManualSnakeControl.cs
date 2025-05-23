@@ -40,11 +40,19 @@ public class ManualSnakeControl : SnakeControl
     {
         if((playerOne && Input.GetKeyDown(KeyCode.A)) || (!playerOne && Input.GetKeyDown(KeyCode.LeftArrow)))
         {
-            turnLeft();
+            if(myDirection.x != 1) turn(Dir.LEFT);
         }
         else if ((playerOne && Input.GetKeyDown(KeyCode.D)) || (!playerOne && Input.GetKeyDown(KeyCode.RightArrow)))
         {
-            turnRigth();
+            if (myDirection.x != -1) turn(Dir.RIGHT);
+        }
+        else if ((playerOne && Input.GetKeyDown(KeyCode.W)) || (!playerOne && Input.GetKeyDown(KeyCode.UpArrow)))
+        {
+            if (myDirection.z != -1) turn(Dir.UP);
+        }
+        else if ((playerOne && Input.GetKeyDown(KeyCode.S)) || (!playerOne && Input.GetKeyDown(KeyCode.DownArrow)))
+        {
+            if (myDirection.z != 1) turn(Dir.DOWN);
         }
     }
 }

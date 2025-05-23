@@ -7,7 +7,7 @@ using UnityEngine.SocialPlatforms.Impl;
 
 public enum Direction
 {
-    LEFT,RIGHT, NODIRECTION
+    LEFT,RIGHT, UP, DOWN
 }
 class myCaseSerializer: CaseSerializer
 {
@@ -17,7 +17,9 @@ class myCaseSerializer: CaseSerializer
         {
             if (var == Direction.LEFT) return "left";
             else if (var == Direction.RIGHT) return "right";
-            else return "noDirection";
+            else if (var == Direction.UP) return "up";
+            else if (var == Direction.DOWN) return "down";
+            else return "error";
         }
         else
         {
@@ -30,7 +32,8 @@ class myCaseSerializer: CaseSerializer
         {
             if (var == "left") return Direction.LEFT;
             else if (var == "right") return Direction.RIGHT;
-            else if (var == "noDirection") return Direction.NODIRECTION;
+            else if (var == "up") return Direction.UP;
+            else if (var == "down") return Direction.DOWN;
             else return null;
         }
         else return base.unserializeVariable(var, type);
@@ -89,7 +92,7 @@ public class CBRContrSnake : SnakeControl
     myCaseSerializer caseSerializer;
     int reviseCounter;
     bool humanControl = false;
-    Direction lastDirectionPicked = Direction.NODIRECTION;
+    Direction lastDirectionPicked;
     #endregion
     // Start is called before the first frame update
     public override void Start()
@@ -126,7 +129,6 @@ public class CBRContrSnake : SnakeControl
                 else myBrain.learnFromHuman(formACase(), lastDirectionPicked);
                 elapsedTime = 0;
                 if(!humanControl)reviseCounter++;
-                lastDirectionPicked = Direction.NODIRECTION;
             }
             
         }
@@ -143,19 +145,40 @@ public class CBRContrSnake : SnakeControl
         {
             System.Random rnd = new System.Random();
             int xd = rnd.Next(0, 3);
-            if(xd == 0) return Direction.RIGHT;
-            else if (xd == 1) return Direction.LEFT;
-            else return Direction.NODIRECTION;
-            
+            if (myDirection.x != 0)
+            {
+                if (xd == 0 && myDirection.x == -1) return Direction.LEFT;
+                if (xd == 0 && myDirection.x == 1) return Direction.RIGHT;
+                if (xd == 1) return Direction.UP;
+                else return Direction.DOWN;
+            }
+            else
+            {
+                if (xd == 0 && myDirection.z == -1) return Direction.DOWN;
+                if (xd == 0 && myDirection.z == 1) return Direction.UP;
+                if (xd == 1) return Direction.UP;
+                else return Direction.DOWN;
+            }
         });
-        if (myDir == Direction.LEFT)
+        
+        switch (myDir)
         {
-            turnLeft();
+            case Direction.LEFT:
+                turn(Dir.LEFT); 
+                break;
+
+            case Direction.RIGHT:
+                turn(Dir.RIGHT);
+                break;
+
+            case Direction.UP:
+                turn(Dir.UP);
+                break;
+            case Direction.DOWN:
+                turn(Dir.DOWN);
+                break;
         }
-        else if (myDir == Direction.RIGHT)
-        {
-            turnRigth();
-        }
+
         if (reviseCounter >= 3) myBrain.setEvaluateNextCase(true);
 
     }
@@ -163,13 +186,23 @@ public class CBRContrSnake : SnakeControl
     {
         if ((playerOne && Input.GetKeyDown(KeyCode.A)) || (!playerOne && Input.GetKeyDown(KeyCode.LeftArrow)))
         {
-            turnLeft();
+            if (myDirection.x != 1) turn(Dir.LEFT);
             lastDirectionPicked = Direction.LEFT;
         }
         else if ((playerOne && Input.GetKeyDown(KeyCode.D)) || (!playerOne && Input.GetKeyDown(KeyCode.RightArrow)))
         {
-            turnRigth();
-            lastDirectionPicked= Direction.RIGHT;
+            if (myDirection.x != -1) turn(Dir.RIGHT);
+            lastDirectionPicked = Direction.RIGHT;
+        }
+        else if ((playerOne && Input.GetKeyDown(KeyCode.W)) || (!playerOne && Input.GetKeyDown(KeyCode.UpArrow)))
+        {
+            if (myDirection.z!= -1) turn(Dir.UP);
+            lastDirectionPicked = Direction.UP;
+        }
+        else if ((playerOne && Input.GetKeyDown(KeyCode.S)) || (!playerOne && Input.GetKeyDown(KeyCode.DownArrow)))
+        {
+            if (myDirection.z != 1) turn(Dir.DOWN);
+            lastDirectionPicked = Direction.DOWN;
         }
     }
 
@@ -253,8 +286,8 @@ public class CBRContrSnake : SnakeControl
                 score -= 2;
         }
 
-        float distanceBefore = (Math.Abs(query.getProperty("headDirection").x - query.getProperty("fruitPos").x) + Math.Abs(query.getProperty("headDirection").z - query.getProperty("fruitPos").y));
-        float distanceAfter = (Math.Abs(futureQuery.getProperty("headDirection").x - futureQuery.getProperty("fruitPos").x) + Math.Abs(futureQuery.getProperty("headDirection").z - futureQuery.getProperty("fruitPos").y));
+        float distanceBefore = (Math.Abs(query.getProperty("headDirection").x - query.getProperty("fruitPos").x) + Math.Abs(query.getProperty("headDirection").z - query.getProperty("fruitPos").z));
+        float distanceAfter = (Math.Abs(futureQuery.getProperty("headDirection").x - futureQuery.getProperty("fruitPos").x) + Math.Abs(futureQuery.getProperty("headDirection").z - futureQuery.getProperty("fruitPos").z));
 
         if (distanceAfter < distanceBefore)
             score += 2;
@@ -279,8 +312,8 @@ public class CBRContrSnake : SnakeControl
         {
             for (int i = 0; i < 5; i++) // Mira en 5 casillas desde donde estoy
             {
-                if ((this.headNode.y + this.myDirection.y * 5) >= 18 || (this.headNode.y + this.myDirection.y * 5) <= 0) inTrackToCollision = true;
-                else if (GameManager.Instance.isThereSnake((int)this.headNode.x, (int)(this.headNode.y + (this.myDirection.y * i)), this.playerOne)) inTrackToCollision = true;
+                if ((this.headNode.y + this.myDirection.z * 5) >= 18 || (this.headNode.y + this.myDirection.z * 5) <= 0) inTrackToCollision = true;
+                else if (GameManager.Instance.isThereSnake((int)this.headNode.x, (int)(this.headNode.y + (this.myDirection.z * i)), this.playerOne)) inTrackToCollision = true;
             }
         }
         return inTrackToCollision;

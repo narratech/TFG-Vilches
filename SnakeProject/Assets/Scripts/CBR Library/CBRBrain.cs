@@ -182,7 +182,6 @@ public class CBRBrain
             if (type == reuseAnswerType.mostVoted)
             {
                 Dictionary<dynamic, int> votes = new Dictionary<dynamic, int>();
-                Tuple<dynamic, int> answer = null;
                 foreach (CaseWithSimilarity myCase in knnCases)
                 {
                     if(myCase.myCase.getAnswer()==null)

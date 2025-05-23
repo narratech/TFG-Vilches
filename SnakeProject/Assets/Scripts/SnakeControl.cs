@@ -4,16 +4,18 @@ using UnityEngine;
 
 public class SnakeControl : MonoBehaviour
 {
+    protected enum Dir
+    {
+        LEFT, RIGHT, UP, DOWN
+    }
     protected struct Nodo
     {
         public Vector3 centro;
         public Vector3 direccion;
-        public float rotationNeeded;
         public Nodo(Vector3 cent, Vector3 dir)
         {
             centro = cent;
             direccion = dir;
-            rotationNeeded = 0;
         }
     }
     protected struct BodyPart
@@ -155,11 +157,9 @@ public class SnakeControl : MonoBehaviour
         // Te mueves en la direccion que diga ese nodo si es diferente a tu dirección
         if (myNodos[nodeX, nodeY].direccion != new Vector3(0, 0, 0) && myNodos[nodeX, nodeY].direccion != headPart.direccion)
         {
-
-            headPart.parte.transform.Rotate(Vector3.up, myNodos[nodeX, nodeY].rotationNeeded);
-
             headPart.direccion = myNodos[nodeX, nodeY].direccion;
             myDirection = headPart.direccion;
+            headPart.parte.transform.rotation = Quaternion.LookRotation(myDirection);
             
         }
         // Movimiento discreto mejor, por nodos, no continuo con delta.
@@ -206,7 +206,7 @@ public class SnakeControl : MonoBehaviour
                 if (myNodos[nodeX, nodeY].direccion != new Vector3(0, 0, 0) && myNodos[nodeX, nodeY].direccion != myPart.direccion)
                 {
 
-                    myPart.parte.transform.Rotate(Vector3.up, myNodos[nodeX, nodeY].rotationNeeded);
+                    myPart.parte.transform.rotation = Quaternion.LookRotation(myNodos[nodeX, nodeY].direccion);
 
 
                     myPart.direccion = myNodos[nodeX, nodeY].direccion; // Se guarda la direccion a seguir
@@ -231,10 +231,9 @@ public class SnakeControl : MonoBehaviour
                     // Falta rotar las cosas
 
                     tailPart.direccion = myNodos[nodeX, nodeY].direccion; // La cola tiene la direccion
-                    tailPart.parte.transform.Rotate(Vector3.up, myNodos[nodeX, nodeY].rotationNeeded);
+                    tailPart.parte.transform.rotation = Quaternion.LookRotation(myNodos[nodeX, nodeY].direccion);
 
                     myNodos[nodeX, nodeY].direccion = new Vector3(0, 0, 0); // Si pasa la cola, se reinicia el nodo para otro giro
-                    myNodos[nodeX, nodeY].rotationNeeded = 0;
                 }
 
                 tailPart.parte.transform.position = myNodos[nodeX + Mathf.RoundToInt(tailPart.direccion.x), nodeY - Mathf.RoundToInt(tailPart.direccion.z)].centro;
@@ -262,29 +261,33 @@ public class SnakeControl : MonoBehaviour
         bodyParts.Add(new BodyPart(dir, newBodyPart));
         growthNeeded = false;
     }
-    protected void turnRigth()
+
+    protected void turn(Dir direction)
     {
         int nodeX = 17 + Mathf.RoundToInt(headPart.parte.transform.position.x);
         int nodeY = 9 - Mathf.RoundToInt(headPart.parte.transform.position.z);
         //Marcas el siguiente nodo de tu direccion para giro
-        Vector3 newDirect = Quaternion.AngleAxis(90, Vector3.up) * myDirection;
-        newDirect.x = Mathf.RoundToInt(newDirect.x);
-        newDirect.z = Mathf.RoundToInt(newDirect.z);
+        Vector3 newDirect;
+        switch(direction)
+        {
+            case Dir.LEFT:
+                newDirect = new Vector3(-1, 0, 0);
+                break;
+            case Dir.RIGHT:
+                newDirect = new Vector3(1, 0, 0);
+                break;
+            case Dir.UP:
+                newDirect = new Vector3(0, 0, 1);
+                break;
+            case Dir.DOWN:
+                newDirect = new Vector3(0, 0, -1);
+                break;
+            default:
+                newDirect = new Vector3(0, 0, 0);
+                break;
+        }
         newDirect = newDirect.normalized;
         myNodos[nodeX, nodeY].direccion = newDirect;
-        myNodos[nodeX, nodeY].rotationNeeded = 90;
-    }
-    protected void turnLeft()
-    {
-        int nodeX = 17 + Mathf.RoundToInt(headPart.parte.transform.position.x);
-        int nodeY = 9 - Mathf.RoundToInt(headPart.parte.transform.position.z);
-        //Marcas el siguiente nodo de tu direccion para giro
-        Vector3 newDirect = Quaternion.AngleAxis(-90, Vector3.up) * myDirection;
-        newDirect.x = Mathf.RoundToInt(newDirect.x);
-        newDirect.z = Mathf.RoundToInt(newDirect.z);
-        newDirect = newDirect.normalized;
-        myNodos[nodeX, nodeY].direccion = newDirect;
-        myNodos[nodeX, nodeY].rotationNeeded = -90;
     }
     protected List<float> getWallsDistance()
     {
