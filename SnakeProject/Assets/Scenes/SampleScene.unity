@@ -404,7 +404,7 @@ PrefabInstance:
     - target: {fileID: 1399184998461341194, guid: 6b76a0973a158f94b83e6124072f2c56, type: 3}
       propertyPath: player1
       value: 
-      objectReference: {fileID: 3924440162057694374, guid: 91bedc7965dd4484cb4c1a1661300104, type: 3}
+      objectReference: {fileID: 1247056506}
     - target: {fileID: 1399184998461341194, guid: 6b76a0973a158f94b83e6124072f2c56, type: 3}
       propertyPath: player2
       value: 
@@ -413,14 +413,6 @@ PrefabInstance:
       propertyPath: GuiManager
       value: 
       objectReference: {fileID: 1592944148}
-    - target: {fileID: 1399184998461341194, guid: 6b76a0973a158f94b83e6124072f2c56, type: 3}
-      propertyPath: player1Prefab
-      value: 
-      objectReference: {fileID: 3924440162057694374, guid: 91bedc7965dd4484cb4c1a1661300104, type: 3}
-    - target: {fileID: 1399184998461341194, guid: 6b76a0973a158f94b83e6124072f2c56, type: 3}
-      propertyPath: player2Prefab
-      value: 
-      objectReference: {fileID: 6551087715323887425, guid: 46d19a388c27a044c84f887bda9bda83, type: 3}
     - target: {fileID: 1845226089613480028, guid: 6b76a0973a158f94b83e6124072f2c56, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -14475,7 +14467,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3924440162057694374, guid: 91bedc7965dd4484cb4c1a1661300104, type: 3}
       propertyPath: m_Name
-      value: Snake
+      value: SnakeClone
       objectReference: {fileID: 0}
     - target: {fileID: 8736777819488587908, guid: 91bedc7965dd4484cb4c1a1661300104, type: 3}
       propertyPath: m_LocalScale.x
@@ -14771,7 +14763,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6551087715323887425, guid: 46d19a388c27a044c84f887bda9bda83, type: 3}
       propertyPath: m_Name
-      value: Snake2
+      value: Snake2Clone
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

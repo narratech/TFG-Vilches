@@ -32,10 +32,6 @@ public class GameManager : MonoBehaviour
     private GameObject fruit;
     private Vector2 fruitNode;
     [SerializeField]
-    private GameObject player1Prefab;
-    [SerializeField]
-    private GameObject player2Prefab;
-    [SerializeField]
     private GameObject player1;
     private List<Vector2> player1Nodes;
     private Vector2 player1Dir;
@@ -175,15 +171,17 @@ public class GameManager : MonoBehaviour
     {
         keepPlaying = false;
         GuiManager.GetComponent<GUIManager>().ShowWinText(!isPlayerOne); // Gana el que no pierde, facil :D
+        if (isPlayerOne) player1Score -= 200;
+        else player2Score -= 200;
     }
     public void OnRetryReset()
     {
         player1.GetComponent<SnakeControl>().onResetTry();
         player2.GetComponent<SnakeControl>().onResetTry();
         Destroy(instantiatedFruit);
-        player1Score = 0; // A lo mejor mantengo puntuaciones y resto y sumo 200 segun quien gane
-        player2Score = 0;
         GuiManager.GetComponent<GUIManager>().OnRetryReset();
+        GuiManager.GetComponent<GUIManager>().ChangeP1Points(player1Score);
+        GuiManager.GetComponent<GUIManager>().ChangeP2Points(player2Score);
         this.Start();
         player1.GetComponent<SnakeControl>().Awake();
         player2.GetComponent<SnakeControl>().Awake();
