@@ -309,6 +309,7 @@ public class CBRBrain
         }
         SortedSet<CaseWithSimilarity> caseSimil = retrieveKNNCases(query, minFitness);
         dynamic res = reuseCases(caseSimil, ref query,reuseAnswer);
+        Debug.Log(res);
         if (res == null) 
         {
             res = myFunc(args);
@@ -320,7 +321,7 @@ public class CBRBrain
             CaseCBRv2 caseToEvaluate;
             if(casesToEvaluate.TryDequeue(out caseToEvaluate))
             {
-                if(reviseCase(reviseType, caseToEvaluate,query))
+                if(reviseCase(reviseType, caseToEvaluate,query)) // Compara el caso a evaluar (estado anterior de la partida) con la query actual (estado posterior de la partida)
                 {
                     retainCases(in caseToEvaluate);
                     evaluateNextCase = false;

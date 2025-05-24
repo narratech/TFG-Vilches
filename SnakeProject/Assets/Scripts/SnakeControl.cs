@@ -183,9 +183,6 @@ public class SnakeControl : MonoBehaviour
             return;
         }
 
-        GameManager.Instance.occupieNode(nodeX + Mathf.RoundToInt(headPart.direccion.x), 
-            nodeY - Mathf.RoundToInt(headPart.direccion.z),playerOne);
-
             nodeX = 17 + Mathf.RoundToInt(headPart.parte.transform.position.x); // Para comprobar si hay fruta o serpiente
             nodeY = 9 - Mathf.RoundToInt(headPart.parte.transform.position.z);
             // Te comes la fruta
@@ -214,8 +211,6 @@ public class SnakeControl : MonoBehaviour
 
                 }
                 myPart.parte.transform.position = myNodos[nodeX + Mathf.RoundToInt(myPart.direccion.x), nodeY - Mathf.RoundToInt(myPart.direccion.z)].centro;
-                GameManager.Instance.occupieNode(nodeX + Mathf.RoundToInt(myPart.direccion.x), 
-                    nodeY - Mathf.RoundToInt(myPart.direccion.z), playerOne);
                 bodyParts[i] = myPart;
             nodeX = 17 + Mathf.RoundToInt(myPart.parte.transform.position.x);
             nodeY = 9 - Mathf.RoundToInt(myPart.parte.transform.position.z);
@@ -237,16 +232,15 @@ public class SnakeControl : MonoBehaviour
                 }
 
                 tailPart.parte.transform.position = myNodos[nodeX + Mathf.RoundToInt(tailPart.direccion.x), nodeY - Mathf.RoundToInt(tailPart.direccion.z)].centro;
-                GameManager.Instance.occupieNode(nodeX + Mathf.RoundToInt(tailPart.direccion.x), 
-                    nodeY - Mathf.RoundToInt(tailPart.direccion.z), playerOne);
                 nodeX = 17 + Mathf.RoundToInt(tailPart.parte.transform.position.x);
                 nodeY = 9 - Mathf.RoundToInt(tailPart.parte.transform.position.z);
                 snakePositions.Add(new Vector2(nodeX, nodeY));
 
-                GameManager.Instance.deOccupieNode(nodeX, nodeY); // Si la cola pasa, hay que desocupar el nodo, no queda más serpiente.
 
             }
             else growSomething();
+        GameManager.Instance.deOccupieNode(previousSnakePositions);
+        GameManager.Instance.occupieNode(snakePositions, playerOne);
 
     }
 

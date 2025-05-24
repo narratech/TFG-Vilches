@@ -133,17 +133,23 @@ public class GameManager : MonoBehaviour
     }
 
 
-    public void occupieNode(int nodeX, int nodeY, bool playerOne)
+    public void occupieNode(List<Vector2> pos, bool playerOne)
     {
-        myNodos[nodeX,nodeY].snakePartPresent = true;
-        myNodos[nodeX,nodeY].wichSnake = playerOne? NodeInfo.snakePresent.player1 : NodeInfo.snakePresent.player2;
-        freeNodes.Remove(new Vector2(nodeX, nodeY));
+        foreach (Vector2 pos2 in pos)
+        {
+            myNodos[(int)pos2.x, (int)pos2.y].snakePartPresent = true;
+            myNodos[(int)pos2.x, (int)pos2.y].wichSnake = playerOne ? NodeInfo.snakePresent.player1 : NodeInfo.snakePresent.player2;
+            freeNodes.Remove(pos2);
+        }
     }
-    public void deOccupieNode(int nodeX, int nodeY)
+    public void deOccupieNode(List<Vector2>pos)
     {
-        myNodos[nodeX, nodeY].snakePartPresent = false;
-        myNodos[nodeX,nodeY].wichSnake = NodeInfo.snakePresent.none;
-        freeNodes.Add(new Vector2(nodeX, nodeY));
+        foreach (Vector2 pos2 in pos)
+        {
+            myNodos[(int)pos2.x, (int)pos2.y].snakePartPresent = false;
+            myNodos[(int)pos2.x, (int)pos2.y].wichSnake = NodeInfo.snakePresent.none;
+            freeNodes.Add(pos2);
+        }
     }
     public bool isThereFruit(int nodeX, int nodeY)
     {
