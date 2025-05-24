@@ -98,7 +98,7 @@ public class CBRContrSnake : SnakeControl
     {
         base.Start();
         caseSerializer = new myCaseSerializer();
-        myBrain = new CBRBrain("Prueba3",caseSerializer,new myComparer(),0.95f,reuseAnswerType.mostSimilar,5,new myCaseFitness(),ReviseType.custom,customEvaluateCase);
+        myBrain = new CBRBrain("Prueba3",new myComparer(), caseSerializer, 0.95f,reuseAnswerType.mostSimilar,5,new myCaseFitness(),ReviseType.custom,customEvaluateCase);
         reviseCounter = 0;
     }
 

@@ -25,6 +25,7 @@ public class CBRBrain
     List<CaseCBRv2> possibleTwins;
     CaseFitness fitness;
     CaseComparer comparer;
+
     ReviseType reviseType;
     reuseAnswerType reuseAnswer;
     Func<CaseCBRv2,CaseCBRv2,System.Object[], bool> myFunc;
@@ -44,11 +45,11 @@ public class CBRBrain
     /// <param name="myFintess">Funcion para decidir que caso es mejor (por similaritud, por aptitud, etc...)</param>
     /// <param name="similarityThreshold">Entre 0 y 1, como de similar tienen que ser los casos para que no se guarden</param>
     /// <param name="kNNRequired">Numero de casos que se recuperan para la respuesta</param>
-    /// <param name="myComparer">Comparador para decidir como se computa la similiritud de los casos</param>
+    /// <param name="myComparer">Comparador para decidir como se computa la similiritud de los casos (Necesario)</param>
     /// <param name="customReview">Función lambda para la revisión custom. Puede ser null si se va con la por defecto</param>
     /// <param name="customReviewArgs"> Argumentos necesarios para la función lamda. Puede ser null si esta no los necesita</param>gs">
     /// <param name="type">Tipo de funcion que se va a usar para revisar el perfomance del caso y si se va a guardar</param>
-    public CBRBrain(string CSVname,CaseSerializer mySerializer = null,CaseComparer myComparer = null, float similarityThreshold = 0, reuseAnswerType reuseType = reuseAnswerType.mostSimilar, int kNNRequired = 1, CaseFitness myFintess = null,
+    public CBRBrain(string CSVname, CaseComparer myComparer , CaseSerializer mySerializer = null, float similarityThreshold = 0, reuseAnswerType reuseType = reuseAnswerType.mostSimilar, int kNNRequired = 1, CaseFitness myFintess = null,
          ReviseType type = ReviseType.alwaysRetain, Func<CaseCBRv2,CaseCBRv2,System.Object[], bool> customReview = null, System.Object[] customReviewArgs = null)
     {
         caseToSave = new List<CaseCBRv2>();
