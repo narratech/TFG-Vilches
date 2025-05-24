@@ -384,7 +384,7 @@ MonoBehaviour:
   headPartObj: {fileID: 326185110}
   bodyPartObj: {fileID: 2071755830}
   tailPartObj: {fileID: 1719943468}
-  speed: 0
+  speed: 5
 --- !u!1001 &219070353
 PrefabInstance:
   m_ObjectHideFlags: 0
