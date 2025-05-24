@@ -156,27 +156,26 @@ public class CBRContrSnake : SnakeControl
             {
                 if (xd == 0 && myDirection.z == -1) return Direction.DOWN;
                 if (xd == 0 && myDirection.z == 1) return Direction.UP;
-                if (xd == 1) return Direction.UP;
-                else return Direction.DOWN;
+                if (xd == 1) return Direction.LEFT;
+                else return Direction.RIGHT;
             }
         });
-        
-        switch (myDir)
+
+        if (myDir == Direction.LEFT && (myDirection.x != 1))
         {
-            case Direction.LEFT:
-                turn(Dir.LEFT); 
-                break;
-
-            case Direction.RIGHT:
-                turn(Dir.RIGHT);
-                break;
-
-            case Direction.UP:
-                turn(Dir.UP);
-                break;
-            case Direction.DOWN:
-                turn(Dir.DOWN);
-                break;
+            turn(Dir.LEFT);
+        }
+        else if (myDir == Direction.RIGHT && (myDirection.x != -1))
+        {
+            turn(Dir.RIGHT);
+        }
+        else if (myDir == Direction.UP && (myDirection.z != -1))
+        {
+            turn(Dir.UP);
+        }
+        else if (myDir == Direction.DOWN && (myDirection.z != 1))
+        {
+            turn(Dir.DOWN);
         }
 
         if (reviseCounter >= 3) myBrain.setEvaluateNextCase(true);
@@ -286,8 +285,8 @@ public class CBRContrSnake : SnakeControl
                 score -= 2;
         }
 
-        float distanceBefore = (Math.Abs(query.getProperty("headDirection").x - query.getProperty("fruitPos").x) + Math.Abs(query.getProperty("headDirection").z - query.getProperty("fruitPos").z));
-        float distanceAfter = (Math.Abs(futureQuery.getProperty("headDirection").x - futureQuery.getProperty("fruitPos").x) + Math.Abs(futureQuery.getProperty("headDirection").z - futureQuery.getProperty("fruitPos").z));
+        float distanceBefore = (Math.Abs(query.getProperty("headDirection").x - query.getProperty("fruitPos").x) + Math.Abs(query.getProperty("headDirection").z - query.getProperty("fruitPos").y));
+        float distanceAfter = (Math.Abs(futureQuery.getProperty("headDirection").x - futureQuery.getProperty("fruitPos").x) + Math.Abs(futureQuery.getProperty("headDirection").z - futureQuery.getProperty("fruitPos").y));
 
         if (distanceAfter < distanceBefore)
             score += 2;

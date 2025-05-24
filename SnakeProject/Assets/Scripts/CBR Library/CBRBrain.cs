@@ -73,6 +73,10 @@ public class CBRBrain
         this.reuseAnswer = reuseType;
         this.normalizedWeights = false;
     }
+    ~CBRBrain()
+    {
+        persistCases();
+    }
     #region public
     /// <summary>
     /// Añade un valor al peso de una caracteristica y se normaliza
