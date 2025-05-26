@@ -32,10 +32,6 @@ public class GameManager : MonoBehaviour
     private GameObject fruit;
     private Vector2 fruitNode;
     [SerializeField]
-    private GameObject player1Prefab;
-    [SerializeField]
-    private GameObject player2Prefab;
-    [SerializeField]
     private GameObject player1;
     private List<Vector2> player1Nodes;
     private Vector2 player1Dir;
@@ -69,7 +65,7 @@ public class GameManager : MonoBehaviour
                 int nodeX = 17 + i;
                 int nodeY = -9 - j;
                 myNodos[nodeX, nodeY] = new NodeInfo(false,false, new Vector3(i, 0, 18 + j));
-                if(i >=-16 && i <= 11 && j <= -8 && j >= -26)
+                if(i >=-16 && i <= 11 && j <= -10 && j >= -26)
                 {
                     freeNodes.Add(new Vector2(nodeX, nodeY));
                 }
@@ -137,17 +133,23 @@ public class GameManager : MonoBehaviour
     }
 
 
-    public void occupieNode(int nodeX, int nodeY, bool playerOne)
+    public void occupieNode(List<Vector2> pos, bool playerOne)
     {
-        myNodos[nodeX,nodeY].snakePartPresent = true;
-        myNodos[nodeX,nodeY].wichSnake = playerOne? NodeInfo.snakePresent.player1 : NodeInfo.snakePresent.player2;
-        freeNodes.Remove(new Vector2(nodeX, nodeY));
+        foreach (Vector2 pos2 in pos)
+        {
+            myNodos[(int)pos2.x, (int)pos2.y].snakePartPresent = true;
+            myNodos[(int)pos2.x, (int)pos2.y].wichSnake = playerOne ? NodeInfo.snakePresent.player1 : NodeInfo.snakePresent.player2;
+            freeNodes.Remove(pos2);
+        }
     }
-    public void deOccupieNode(int nodeX, int nodeY)
+    public void deOccupieNode(List<Vector2>pos)
     {
-        myNodos[nodeX, nodeY].snakePartPresent = false;
-        myNodos[nodeX,nodeY].wichSnake = NodeInfo.snakePresent.none;
-        freeNodes.Add(new Vector2(nodeX, nodeY));
+        foreach (Vector2 pos2 in pos)
+        {
+            myNodos[(int)pos2.x, (int)pos2.y].snakePartPresent = false;
+            myNodos[(int)pos2.x, (int)pos2.y].wichSnake = NodeInfo.snakePresent.none;
+            freeNodes.Add(pos2);
+        }
     }
     public bool isThereFruit(int nodeX, int nodeY)
     {
@@ -175,15 +177,17 @@ public class GameManager : MonoBehaviour
     {
         keepPlaying = false;
         GuiManager.GetComponent<GUIManager>().ShowWinText(!isPlayerOne); // Gana el que no pierde, facil :D
+        if (isPlayerOne) player1Score -= 200;
+        else player2Score -= 200;
     }
     public void OnRetryReset()
     {
         player1.GetComponent<SnakeControl>().onResetTry();
         player2.GetComponent<SnakeControl>().onResetTry();
         Destroy(instantiatedFruit);
-        player1Score = 0; // A lo mejor mantengo puntuaciones y resto y sumo 200 segun quien gane
-        player2Score = 0;
         GuiManager.GetComponent<GUIManager>().OnRetryReset();
+        GuiManager.GetComponent<GUIManager>().ChangeP1Points(player1Score);
+        GuiManager.GetComponent<GUIManager>().ChangeP2Points(player2Score);
         this.Start();
         player1.GetComponent<SnakeControl>().Awake();
         player2.GetComponent<SnakeControl>().Awake();

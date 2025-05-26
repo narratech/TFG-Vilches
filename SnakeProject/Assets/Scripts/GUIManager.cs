@@ -54,8 +54,6 @@ public class GUIManager : MonoBehaviour
     }
     public void OnRetryReset()
     {
-        pointsPlayer1.GetComponent<TextMeshProUGUI>().SetText("0");
-        pointsPlayer2.GetComponent<TextMeshProUGUI>().SetText("0");
         winnerText.SetActive(false);
         retryButton.SetActive(false);
     }
