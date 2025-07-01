@@ -151,7 +151,6 @@ public class CaseSerializer
                 }
             default:
                 {
-                    // ERROR: A lo mejor devolver un error?
                     return null;
                 }
         }

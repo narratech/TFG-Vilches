@@ -3,11 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
-using UnityEditor.Compilation;
 using UnityEngine;
 public class CaseCBR
 {
-    // DUDA: PUEDE QUE ACABE HACIENDOLO DYNAMIC, GETTERS Y SETTERS SIN NECESIDAD DE REFLEXIÓN
     private TypeBuilder typeBuilder;
     dynamic myRealCase; // La instancia de la nueva clase
 
@@ -18,20 +16,6 @@ public class CaseCBR
 
     public CaseCBR()
     {
-        //AssemblyName assemblyName = new AssemblyName("RealCaseCBR");
-        //System.Reflection.Emit.AssemblyBuilder assBuilder = System.Reflection.Emit.AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
-
-        //ModuleBuilder moduleBuilder = assBuilder.DefineDynamicModule("RealCaseCBR");
-        // typeBuilder = moduleBuilder.DefineType(assemblyName.FullName
-        //                      , TypeAttributes.Public |
-        //                      TypeAttributes.Class |
-        //                      TypeAttributes.AutoClass |
-        //                      TypeAttributes.AnsiClass |
-        //                      TypeAttributes.BeforeFieldInit |
-        //                      TypeAttributes.AutoLayout
-        //                      , null); // DUDA: null es el padre. Puedo hacer que herede de otra clase que implemente el answer y weight
-        //typeBuilder.DefineDefaultConstructor(MethodAttributes.Public | MethodAttributes.SpecialName 
-        //    | MethodAttributes.RTSpecialName);
         caseProperties = new Dictionary<string, dynamic>();
         propertyTypes = new Dictionary<string, string>();
         answer = null;

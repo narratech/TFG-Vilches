@@ -189,10 +189,6 @@ public class CBRBrain
                 Dictionary<dynamic, int> votes = new Dictionary<dynamic, int>();
                 foreach (CaseWithSimilarity myCase in knnCases)
                 {
-                    if(myCase.myCase.getAnswer()==null)
-                    {
-                        Debug.Log("WHAT THE FUCK");
-                    }
                     if (!votes.ContainsKey(myCase.myCase.getAnswer()))
                     {
                         votes.Add(myCase.myCase.getAnswer(), 1);
