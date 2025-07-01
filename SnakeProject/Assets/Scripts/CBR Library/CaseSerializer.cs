@@ -159,7 +159,7 @@ public class CaseSerializer
     #endregion
     #region caseSerialzier
     #region private
-    private List<CaseCBRv2> caseList;
+    private List<CaseCBR> caseList;
     private int casesCount;
     StreamReader myReader;
     StreamWriter myWriter;
@@ -167,7 +167,7 @@ public class CaseSerializer
 
     public CaseSerializer()
     {
-        caseList = new List<CaseCBRv2>();
+        caseList = new List<CaseCBR>();
     }
     ~CaseSerializer()
     {
@@ -180,7 +180,7 @@ public class CaseSerializer
     /// </summary>
     /// <param name="csvName">Nombre del CSV a leer</param>
     /// <param name="readedCases">Lista de casos en los que guardar los leidos</param>
-    public virtual void readCases(string csvName, ref List<CaseCBRv2> readedCases)
+    public virtual void readCases(string csvName, ref List<CaseCBR> readedCases)
     {
         string filePath = "CaseBase/" + csvName + ".csv";
 
@@ -209,7 +209,7 @@ public class CaseSerializer
     /// <param name="CSVname">Nombre de la base de casos</param>
     /// <param name="caseToSave">Casos para escribir</param>
     /// <param name="ignoreExisting">Ignora si existia antes una base de casos</param>
-    public virtual void writeCases(string CSVname, List<CaseCBRv2>caseToSave, bool ignoreExisting = false)
+    public virtual void writeCases(string CSVname, List<CaseCBR>caseToSave, bool ignoreExisting = false)
     {
         string filePath = "CaseBase/" + CSVname + ".csv";
 
@@ -226,7 +226,7 @@ public class CaseSerializer
                 string names = "id," + string.Join(",", caseToSave[0].getVariableNames());
                 myWriter.WriteLine(names); //En caso de que no existiese, la primera linea es para nombres
             }
-            foreach (CaseCBRv2 myCase in caseToSave) // Escribe los nuevos casos
+            foreach (CaseCBR myCase in caseToSave) // Escribe los nuevos casos
             {
                 myWriter.WriteLine(id + "," + serializeCaseToCSV(myCase));
                 id++;
@@ -243,10 +243,10 @@ public class CaseSerializer
     /// <param name="variablesTypes">Nombre de las variables del caso</param>
     /// <param name="values">Valores del caso para estas variables</param>
     /// <returns>El caso formado</returns>
-    public virtual CaseCBRv2 serializeCSVToCase(string[] variablesTypes, string[] values)
+    public virtual CaseCBR serializeCSVToCase(string[] variablesTypes, string[] values)
     {
         //ERROR: Si recibe tipo no soportado, sacar excepcion
-        CaseCBRv2 myCase = new CaseCBRv2();
+        CaseCBR myCase = new CaseCBR();
         for (int i = 1; i < values.Length; i++) // Empieza en 1 porque el 0 es la id
         {
             string name = variablesTypes[i].Split(":")[0];
@@ -263,7 +263,7 @@ public class CaseSerializer
         return myCase;
     }
 
-    public virtual string serializeCaseToCSV(CaseCBRv2 myCase)
+    public virtual string serializeCaseToCSV(CaseCBR myCase)
     {
         string myCaseParsed = "";
         List<string> variableNames = myCase.getVariableNames();

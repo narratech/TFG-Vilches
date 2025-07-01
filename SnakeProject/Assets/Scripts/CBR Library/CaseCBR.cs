@@ -1,195 +1,90 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Numerics;
+using System.Reflection;
+using System.Reflection.Emit;
+using UnityEditor.Compilation;
 using UnityEngine;
-
-//DUDA: Seguramente sea una clase de la que el usuario podrá implementar su propio comparador, pero necesita un comparador por defecto
-/// <summary>
-/// Clase que se encarga de comparar dos casos según su similitud con otro para decidir cual es más parecido, de momento
-/// </summary>
-//public class CaseComparer : IComparer<Tuple<CaseCBR, float>>
-//{
-//    // Compara el score del caso y su similitud.
-//    public int Compare(Tuple<CaseCBR, float> x, Tuple<CaseCBR, float> y)
-//    {
-//        //Teniendo en cuenta que un valor optimo medio seria no morir y comer 5 pills (10 pts cada una),
-//        //la puntuacion se reduce a 0.0005 para dar un valor que no eclipse a la similitud
-//        // El multiplicador del score habria que retocarlo
-//        //double actualValueX = x.Item1.getScore() * x.Item1.weight * 0.001 + x.Item2 * 0.8;
-//        //double actualValueY = y.Item1.getScore() * y.Item1.weight * 0.001 + y.Item2 * 0.8;
-//        double actualValueX = x.Item2;
-//        double actualValueY = y.Item2;
-//        if (actualValueX > actualValueY)
-//        {
-//            return -1;
-//        }
-//        else if (actualValueX < actualValueY)
-//        {
-//            return 1;
-//        }
-//        else return 0;
-//    }
-//}
-// ERROR: Va a hacer falta manejo de errores para indicarle al usuario que hace falta que en su caso haya una variable de nombre
-// answer sí o sí para poder hacer un caso viable
-// Otra solución es crear una CLASE QUE HEREDE DE LA CLASE DINÁMICA QUE IMPLEMENTE TANTO EL WEIGHT COMO EL ANSWER (soy un genio)
-public class CaseCBR 
+public class CaseCBR
 {
-    // Pensando en hacerlo todo en un dicionario <string, Tuple<enumerador con la clase,Object>> para meterlo todo
-    // En una sola estructura
-    // MIRAR REFLEXION EN C# (CREAR ESTRUCTURAS DE CLASE EN EJECUCIÓN)
-    // EN CASO DE QUE NO SE PUEDA, HACER INTERFAZ
-    private Dictionary<string, float> similarityFloat = null;
-    private Dictionary<string, List<float>> similarityFloatLists = null;
+    // DUDA: PUEDE QUE ACABE HACIENDOLO DYNAMIC, GETTERS Y SETTERS SIN NECESIDAD DE REFLEXIÓN
+    private TypeBuilder typeBuilder;
+    dynamic myRealCase; // La instancia de la nueva clase
 
-    // HACER COMPARACIONES POR DISTANCIAS BASICAS A LOS USUARIOS CON VECTORES Y QUE ELLOS HAGAN LO ESPECIFICO
-    private Dictionary<string, UnityEngine.Vector3> similarityVec3 = null;
-    private Dictionary<string, UnityEngine.Vector2> similarityVec2 = null;
-    private Dictionary<string, List<UnityEngine.Vector3>> similarityVec3List = null;
-    private Dictionary<string, List<UnityEngine.Vector2>> similarityVec2List = null;
+    Dictionary<string, dynamic> caseProperties;
+    Dictionary<string, string> propertyTypes;
+    dynamic answer = null;
+    int weight;
 
-    private Dictionary<string, string> similarityStrings = null; //????
+    public CaseCBR()
+    {
+        //AssemblyName assemblyName = new AssemblyName("RealCaseCBR");
+        //System.Reflection.Emit.AssemblyBuilder assBuilder = System.Reflection.Emit.AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
 
-    private Dictionary<string,bool> similarityBool;
-    private Dictionary<string,List<bool>> similarityBoolList;
-
-    private dynamic answer; // Es dinamico porque no sabemos si sera un string, enumerador, int... Lo que el usuario quiera
-    public int weight; // Veces que aparece en la base de datos
-
-    public CaseCBR() 
-    { 
+        //ModuleBuilder moduleBuilder = assBuilder.DefineDynamicModule("RealCaseCBR");
+        // typeBuilder = moduleBuilder.DefineType(assemblyName.FullName
+        //                      , TypeAttributes.Public |
+        //                      TypeAttributes.Class |
+        //                      TypeAttributes.AutoClass |
+        //                      TypeAttributes.AnsiClass |
+        //                      TypeAttributes.BeforeFieldInit |
+        //                      TypeAttributes.AutoLayout
+        //                      , null); // DUDA: null es el padre. Puedo hacer que herede de otra clase que implemente el answer y weight
+        //typeBuilder.DefineDefaultConstructor(MethodAttributes.Public | MethodAttributes.SpecialName 
+        //    | MethodAttributes.RTSpecialName);
+        caseProperties = new Dictionary<string, dynamic>();
+        propertyTypes = new Dictionary<string, string>();
         answer = null;
+        weight = 1;
+        caseProperties["weight"] = 1;
+        propertyTypes["weight"] = "float";
+        caseProperties["answer"] = null;
+        propertyTypes["answer"] = null; // ERROR: Si no has hecho el setType previo
     }
-    public CaseCBR(CaseCBR otherCase)
+    /// <summary>
+    /// Se encarga de comprobar si esa propiedad ya está creada, creandola si no, y asignandole un valor
+    /// El nombre de la propiedad deve tener el tipo nombre:tipo para que se serialicen correctamente después
+    /// </summary>
+    /// <param name="name">Nombre de la propiedad</param>
+    /// <param name="value">Valor de la propiedad</param>
+    public void setProperty(string name, dynamic value)
     {
-        this.similarityFloat = otherCase.similarityFloat;
-        this.similarityFloatLists = otherCase.similarityFloatLists;
-        this.similarityBool = otherCase.similarityBool;
-        this.similarityBoolList = otherCase.similarityBoolList;
-        this.similarityVec2 = otherCase.similarityVec2;
-        this.similarityVec2List = otherCase.similarityVec2List;
-        this.similarityVec3 = otherCase.similarityVec3;
-        this.similarityVec3List = otherCase.similarityVec3List;
-        this.weight = otherCase.weight;
-        this.answer = otherCase.answer;
-    }
-    // Métodos para añadir a sus respectivas listas
-    #region addToCase/setters
-    public void addFloatToCase(float value, string name)
-    {
-        if(similarityFloat == null) similarityFloat = new Dictionary<string, float>();
-        similarityFloat[name] = value; 
+        //if (!caseProperties.ContainsKey(name))
+        //{
+        //    CreateProperty(name, value.GetType());
+        //}
+        string[] separation = name.Split(":");
+        caseProperties[separation[0]] = value;
+        propertyTypes[separation[0]] = separation[1];
     }
 
-    public void addFloatListToCase(List<float> value, string name)
+    public dynamic getProperty(string name)
     {
-        if (similarityFloatLists == null) similarityFloatLists = new Dictionary<string, List<float>>();
-        similarityFloatLists[name] = value;
+        // ERROR: En caso de no tener esa propiedad.
+        return caseProperties[name];
     }
-
-    public void addVector2ToCase(UnityEngine.Vector2 value, string name)
-    {
-        if (similarityVec2 == null) similarityVec2 = new Dictionary<string, UnityEngine.Vector2>();
-        similarityVec2[name] = value;
-    }
-
-    public void addVector3ToCase(UnityEngine.Vector3 value,string name)
-    {
-        if (similarityVec3 == null) similarityVec3 = new Dictionary<string, UnityEngine.Vector3>();
-        similarityVec3[name] = value;
-    }
-
-    public void addVector2ListToCase(List<UnityEngine.Vector2> value, string name)
-    {
-        if (similarityVec2List == null) similarityVec2List = new Dictionary<string, List<UnityEngine.Vector2>>();
-        similarityVec2List[name] = value;
-    }
-    public void addVector3ListToCase(List<UnityEngine.Vector3> value, string name)
-    {
-        if (similarityVec3List == null) similarityVec3List = new Dictionary<string, List<UnityEngine.Vector3>>();
-        similarityVec3List[name] = value;
-    }
-
-    public void addBoolToCase(bool value,string name)
-    {
-        if (similarityBool == null) similarityBool = new Dictionary<string, bool>();
-        similarityBool[name] = value;
-    }
-    public void addBoolListToCase(List<bool> value, string name)
-    {
-        if (similarityBoolList == null) similarityBoolList = new Dictionary<string, List<bool>>();
-        similarityBoolList[name] = value;
-    }
-
-    public void setAnswer(dynamic value)
-    {
-        answer = value;
-    }
-    public void setWeigth (int w)
-    {
-        weight = w;
-    }
-    #endregion
-
-    #region getters
-    public float getFloat(string name)
-    {
-        if (similarityFloat == null) throw new NullReferenceException("No existen elementos que mirar");
-        else if(!similarityFloat.ContainsKey(name)) throw new ArgumentOutOfRangeException("El argumento no existe");
-        else return similarityFloat[name];
-    }
-
-    public List<float> getFloatList(string name)
-    {
-        if (similarityFloatLists == null) throw new NullReferenceException("No existen elementos que mirar");
-        else if (!similarityFloatLists.ContainsKey(name)) throw new ArgumentOutOfRangeException("El argumento no existe");
-        else return similarityFloatLists[name];
-    }
-
-    public UnityEngine.Vector2 getVector2(string name)
-    {
-        if (similarityVec2 == null) throw new NullReferenceException("No existen elementos que mirar");
-        else if (!similarityVec2.ContainsKey(name)) throw new ArgumentOutOfRangeException("El argumento no existe");
-        else return similarityVec2[name];
-    }
-
-    public UnityEngine.Vector3 getVector3(string name)
-    {
-        if (similarityVec3 == null) throw new NullReferenceException("No existen elementos que mirar");
-        else if (!similarityVec3.ContainsKey(name)) throw new ArgumentOutOfRangeException("El argumento no existe");
-        else return similarityVec3[name];
-    }
-
-    public List<UnityEngine.Vector2> getVector2List(string name)
-    {
-        if (similarityVec2List == null) throw new NullReferenceException("No existen elementos que mirar");
-        else if (!similarityVec2List.ContainsKey(name)) throw new ArgumentOutOfRangeException("El argumento no existe");
-        else return similarityVec2List[name];
-    }
-    public List<UnityEngine.Vector3> getVector3List(string name)
-    {
-        if (similarityVec3List == null) throw new NullReferenceException("No existen elementos que mirar");
-        else if (!similarityVec3List.ContainsKey(name)) throw new ArgumentOutOfRangeException("El argumento no existe");
-        else return similarityVec3List[name];
-    }
-
-    public bool getBool(string name)
-    {
-        if (similarityBool == null) throw new NullReferenceException("No existen elementos que mirar");
-        else if (!similarityBool.ContainsKey(name)) throw new ArgumentOutOfRangeException("El argumento no existe");
-        else return similarityBool[name];
-    }
-    public bool getBoolList(string name)
-    {
-        if (similarityBool == null) throw new NullReferenceException("No existen elementos que mirar");
-        else if (!similarityBool.ContainsKey(name)) throw new ArgumentOutOfRangeException("El argumento no existe");
-        else return similarityBool[name];
-    }
-
     public dynamic getAnswer()
     {
         return answer;
+    }
+    /// <summary>
+    /// Añade de que tipo es la respuesta para luego serialiazarla y deserializarla.
+    /// El nombre tiene que coincidir con el escrito en los nuevos unserialize y deserialize
+    /// </summary>
+    /// <param name="nameType">String con el nombre del tipo de la respuesta</param>
+    public void setAnswerType(string nameType)
+    {
+        this.propertyTypes["answer"] = nameType;
+    }
+    public void setAnswer(dynamic answer)
+    {
+        this.answer = answer;
+        this.caseProperties["answer"] = answer;
+    }
+    public void setWeight(int weigth)
+    {
+        this.weight = weigth;
+        this.caseProperties["weight"] = (float)weight;
     }
     public int getWeight()
     {
@@ -198,18 +93,7 @@ public class CaseCBR
     public List<string> getVariableNames()
     {
         List<string> names = new List<string>();
-        foreach(string name in similarityFloat.Keys)names.Add(name+":float");
-        foreach(string name in similarityFloatLists.Keys)names.Add(name+":floatList");
-        foreach(string name in similarityBool.Keys)names.Add(name+":bool");
-        foreach(string name in similarityBoolList.Keys)names.Add(name+":boolList");
-        foreach(string name in similarityVec2.Keys)names.Add(name+":vector2");
-        foreach(string name in similarityVec2List.Keys)names.Add(name+":vector2List");
-        foreach(string name in similarityVec3.Keys)names.Add(name+":vector3");
-        foreach(string name in similarityVec3List.Keys)names.Add(name+":vector3List");
-        names.Add("Weight:Weight");
-
+        foreach (string name in caseProperties.Keys) names.Add(name + ":" + propertyTypes[name]);
         return names;
     }
-
-    #endregion
 }

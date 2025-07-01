@@ -18,17 +18,17 @@ public enum reuseAnswerType
 public class CBRBrain
 {
     CaseSerializer caseSerializer; // Va a hacer falta para leer y guardar los archivos
-    Queue<CaseCBRv2> casesToEvaluate;
-    List<CaseCBRv2> caseToSave;
-    List<CaseCBRv2> readedCases;
+    Queue<CaseCBR> casesToEvaluate;
+    List<CaseCBR> caseToSave;
+    List<CaseCBR> readedCases;
 
-    List<CaseCBRv2> possibleTwins;
+    List<CaseCBR> possibleTwins;
     CaseFitness fitness;
-    CaseComparer comparer;
+    ICaseComparer comparer;
 
     ReviseType reviseType;
     reuseAnswerType reuseAnswer;
-    Func<CaseCBRv2,CaseCBRv2,System.Object[], bool> myFunc;
+    Func<CaseCBR,CaseCBR,System.Object[], bool> myFunc;
     System.Object[] myFuncArgs;
 
     Dictionary<string, float> weights;
@@ -49,18 +49,18 @@ public class CBRBrain
     /// <param name="customReview">Función lambda para la revisión custom. Puede ser null si se va con la por defecto</param>
     /// <param name="customReviewArgs"> Argumentos necesarios para la función lamda. Puede ser null si esta no los necesita</param>gs">
     /// <param name="type">Tipo de funcion que se va a usar para revisar el perfomance del caso y si se va a guardar</param>
-    public CBRBrain(string CSVname, CaseComparer myComparer , CaseSerializer mySerializer = null, float similarityThreshold = 0, reuseAnswerType reuseType = reuseAnswerType.mostSimilar, int kNNRequired = 1, CaseFitness myFintess = null,
-         ReviseType type = ReviseType.alwaysRetain, Func<CaseCBRv2,CaseCBRv2,System.Object[], bool> customReview = null, System.Object[] customReviewArgs = null)
+    public CBRBrain(string CSVname, ICaseComparer myComparer , CaseSerializer mySerializer = null, float similarityThreshold = 0, reuseAnswerType reuseType = reuseAnswerType.mostSimilar, int kNNRequired = 1, CaseFitness myFintess = null,
+         ReviseType type = ReviseType.alwaysRetain, Func<CaseCBR,CaseCBR,System.Object[], bool> customReview = null, System.Object[] customReviewArgs = null)
     {
-        caseToSave = new List<CaseCBRv2>();
-        readedCases = new List<CaseCBRv2>();
-        casesToEvaluate = new Queue<CaseCBRv2>();
+        caseToSave = new List<CaseCBR>();
+        readedCases = new List<CaseCBR>();
+        casesToEvaluate = new Queue<CaseCBR>();
         if(mySerializer != null)
         {
             caseSerializer = mySerializer;
         }
         else caseSerializer = new CaseSerializer();
-        possibleTwins = new List<CaseCBRv2>();
+        possibleTwins = new List<CaseCBR>();
         this.weights = new Dictionary<string, float>();
         fitness = myFintess;
         comparer = myComparer;
@@ -141,10 +141,10 @@ public class CBRBrain
     /// <param name="query">Caso presentado al sistema</param>
     /// <param name="minFitness">Aptitud minima para elegir un caso</param>
     /// <returns>Los kNN casos más prometedores, ordenados de más a menos prometedor</returns>
-    public SortedSet<CaseWithSimilarity> retrieveKNNCases(in CaseCBRv2 query, float minFitness = 0)
+    public SortedSet<CaseWithSimilarity> retrieveKNNCases(in CaseCBR query, float minFitness = 0)
     {
         SortedSet<CaseWithSimilarity> kNNCases = new SortedSet<CaseWithSimilarity>(fitness); // Ordenas por fitness
-        foreach(CaseCBRv2 myCase in readedCases) 
+        foreach(CaseCBR myCase in readedCases) 
         {
             CaseWithSimilarity myCaseWithSimil = comparer.computeSimilarity(query, myCase, weights);
             if (myCaseWithSimil.similarity >= minFitness)
@@ -180,7 +180,7 @@ public class CBRBrain
     /// <param name="knnCases">Los casos más prometedores de los que escoger</param>
     /// <param name="query">El caso presentado que se va a generar</param>
     /// <returns>El resultado a utilizar en el juego</returns>
-    public dynamic reuseCases(in SortedSet<CaseWithSimilarity> knnCases, ref CaseCBRv2 query, reuseAnswerType type)
+    public dynamic reuseCases(in SortedSet<CaseWithSimilarity> knnCases, ref CaseCBR query, reuseAnswerType type)
     {
         if (knnCases.Count > 0)
         {
@@ -245,7 +245,7 @@ public class CBRBrain
 /// </summary>
 /// <param name="type">Enumerador indicando el tipo de revisión</param>
 /// <returns></returns>
-    public bool reviseCase(ReviseType type, CaseCBRv2 caseToRevise, CaseCBRv2 newCase)
+    public bool reviseCase(ReviseType type, CaseCBR caseToRevise, CaseCBR newCase)
     {
         if (type == ReviseType.custom)
         {
@@ -265,7 +265,7 @@ public class CBRBrain
     /// </summary>
     /// <param name="myCase">Caso para guardar</param>
     ///<param name="similarityThreshold">Limite de similaridad con el más parecido para guardar o sumar peso al previo</param>
-    public void retainCases(in CaseCBRv2 myCase)
+    public void retainCases(in CaseCBR myCase)
     {
         if (possibleTwins.Count != 0)
         {
@@ -301,7 +301,7 @@ public class CBRBrain
     /// <param name="args">Argumentos necesarios para la función custom (puede ser nulo)</param>
     /// <param name="minFitness">Número entre 0 y 1 de aptitud mínima para utilizar un caso (Puede ser solo similitud)</param>
     /// <returns>La respuesta a ejecutar</returns>
-    public dynamic CBRCycle(CaseCBRv2 query, Func<System.Object[],dynamic> myFunc, System.Object[]args = null, float minFitness = 0)
+    public dynamic CBRCycle(CaseCBR query, Func<System.Object[],dynamic> myFunc, System.Object[]args = null, float minFitness = 0)
     {
         if(!normalizedWeights)
         {
@@ -319,7 +319,7 @@ public class CBRBrain
         casesToEvaluate.Enqueue(query);
         if(evaluateNextCase) 
         {
-            CaseCBRv2 caseToEvaluate;
+            CaseCBR caseToEvaluate;
             if(casesToEvaluate.TryDequeue(out caseToEvaluate))
             {
                 if(reviseCase(reviseType, caseToEvaluate,query)) // Compara el caso a evaluar (estado anterior de la partida) con la query actual (estado posterior de la partida)
@@ -331,7 +331,7 @@ public class CBRBrain
         }
         return res;
     }
-    public void learnFromHuman(CaseCBRv2 query, dynamic playerAnswer)
+    public void learnFromHuman(CaseCBR query, dynamic playerAnswer)
     {
         if (!normalizedWeights)
         {

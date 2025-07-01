@@ -9,80 +9,7 @@ public enum Direction
 {
     LEFT,RIGHT, UP, DOWN
 }
-class myCaseSerializer: CaseSerializer
-{
-    public override string serializeVariable(dynamic var)
-    {
-        if (var.GetType() == typeof(Direction))
-        {
-            if (var == Direction.LEFT) return "left";
-            else if (var == Direction.RIGHT) return "right";
-            else if (var == Direction.UP) return "up";
-            else if (var == Direction.DOWN) return "down";
-            else return "error";
-        }
-        else
-        {
-            return base.serializeVariable((object)var);
-        }
-    }
-    public override dynamic unserializeVariable(string var, string type)
-    {
-        if (type == "direction")
-        {
-            if (var == "left") return Direction.LEFT;
-            else if (var == "right") return Direction.RIGHT;
-            else if (var == "up") return Direction.UP;
-            else if (var == "down") return Direction.DOWN;
-            else return null;
-        }
-        else return base.unserializeVariable(var, type);
-    }
-}
-//Hacer tmb un case comparer que mire el score de la serpiente tras 5 nodos
-class myComparer : CaseComparer
-{
-    public CaseWithSimilarity computeSimilarity(in CaseCBRv2 query, in CaseCBRv2 caseToLook, Dictionary<string, float> weigths)
-    {
-        float maxDistance = (Math.Abs(0 - 30) + Math.Abs(0 - 19));
-        float similarity = 0;
-        similarity += CaseUtility.computeV2ManhattanSimilarity(query.getProperty("position"), 
-           caseToLook.getProperty("position"), maxDistance) * weigths["position"];
-        similarity += CaseUtility.computeV2ManhattanSimilarity(query.getProperty("fruitPos"),
-           caseToLook.getProperty("fruitPos"), maxDistance) * weigths["fruitPos"];
-        similarity += CaseUtility.computeV3ManhattanSimilarity(query.getProperty("headDirection"),
-           caseToLook.getProperty("headDirection"), maxDistance) * weigths["headDirection"];
-        similarity += CaseUtility.computeV2ListManhattanSimilarity(query.getProperty("myPartsNodes"),
-           caseToLook.getProperty("myPartsNodes"), maxDistance) * weigths["myPartsNodes"];
-        similarity += CaseUtility.computeV2ListManhattanSimilarity(query.getProperty("otherSnakePartsNode"),
-          caseToLook.getProperty("otherSnakePartsNode"), maxDistance) * weigths["otherSnakePartsNode"];
-        similarity += CaseUtility.computeFloatListSimilarity(query.getProperty("DistanceToWalls"), caseToLook.getProperty("DistanceToWalls"),maxDistance)
-            * weigths["DistanceToWalls"];
-        similarity += CaseUtility.computeBoolSimilarity(query.getProperty("inTrackToCollide"), caseToLook.getProperty("inTrackToCollide"))
-            *weigths["inTrackToCollide"];
 
-        return new CaseWithSimilarity(caseToLook, similarity);
-    }
-}
-
-class myCaseFitness : CaseFitness
-{
-    public override int Compare(CaseWithSimilarity x, CaseWithSimilarity y)
-    {
-        double actualValueX = x.similarity * 0.8 + (x.myCase.getProperty("Score") / 10) * 0.2;
-        double actualValueY = y.similarity * 0.8 + (y.myCase.getProperty("Score") / 10)*0.2;
-        // TODO: Calcular el score y ver cuanto afecta a la elección
-        if (actualValueX > actualValueY)
-        {
-            return -1;
-        }
-        else if (actualValueX < actualValueY)
-        {
-            return 1;
-        }
-        else return 0;
-    }
-}
 
 public class CBRContrSnake : SnakeControl
 {
@@ -98,7 +25,8 @@ public class CBRContrSnake : SnakeControl
     {
         base.Start();
         caseSerializer = new myCaseSerializer();
-        myBrain = new CBRBrain("Prueba3",new myComparer(), caseSerializer, 0.95f,reuseAnswerType.mostSimilar,5,new myCaseFitness(),ReviseType.custom,customEvaluateCase);
+        myBrain = new CBRBrain("XD",new myComparer(), caseSerializer, 0.95f,reuseAnswerType.mostSimilar,
+            5,new myCaseFitness(),ReviseType.custom,customEvaluateCase);
         reviseCounter = 0;
     }
 
@@ -113,7 +41,7 @@ public class CBRContrSnake : SnakeControl
             if(humanControl) HandleHumanInput();
             if (elapsedTime > 1 / speed)
             {
-                CaseCBRv2 query = formACase();
+                CaseCBR query = formACase();
                 Move();
                 if (playerOne)
                 {
@@ -205,9 +133,9 @@ public class CBRContrSnake : SnakeControl
         }
     }
 
-    CaseCBRv2 formACase()
+    CaseCBR formACase()
     {
-        CaseCBRv2 query = new CaseCBRv2();
+        CaseCBR query = new CaseCBR();
         query.setAnswerType("direction");
         query.setProperty("position:vector2", headNode);
         myBrain.setWeigth("position", 0.25f);
@@ -245,13 +173,13 @@ public class CBRContrSnake : SnakeControl
     }
 
 
-    bool customEvaluateCase(CaseCBRv2 query, CaseCBRv2 futureQuery, System.Object[] myArgs)
+    bool customEvaluateCase(CaseCBR query, CaseCBR futureQuery, System.Object[] myArgs)
     {
         if (!humanControl)
         {
             float score = caseScore(query, futureQuery);
             query.setProperty("Score:float", score);
-            if (score >= 100) return true;
+            if (score >= 0) return true;
             else return false;
         }
         else return true;
@@ -264,7 +192,7 @@ public class CBRContrSnake : SnakeControl
     /// <param name="futureQuery">El estado actual del juego</param>
     /// <returns>El valor Score del caso</returns>
 
-    int caseScore(in CaseCBRv2 query, in CaseCBRv2 futureQuery)
+    int caseScore(in CaseCBR query, in CaseCBR futureQuery)
     {
         int score = 0;
 
