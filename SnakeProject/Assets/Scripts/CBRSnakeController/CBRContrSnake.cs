@@ -150,7 +150,7 @@ public class CBRContrSnake : SnakeControl
             query.setProperty("myPartsNodes:vector2List", myList);
             List<Vector2>myList2 = new List<Vector2>(GameManager.Instance.getPlayer2Positions());
             query.setProperty("otherSnakePartsNode:vector2List", myList2);
-            query.setProperty("LevelScore:float", GameManager.Instance.getPlayer1Score());
+            query.setProperty("levelScore:float", GameManager.Instance.getPlayer1Score());
         }
         else
         {
@@ -241,5 +241,15 @@ public class CBRContrSnake : SnakeControl
             }
         }
         return inTrackToCollision;
+    }
+
+    public void setHumanControl(bool humanContr)
+    {
+        humanControl=humanContr;
+    }
+    public void changeBaseCase(string newCaseBase)
+    {
+        myBrain = new CBRBrain(newCaseBase, new myComparer(), caseSerializer, 0.95f, reuseAnswerType.mostSimilar,
+            5, new myCaseFitness(), ReviseType.custom, customEvaluateCase);
     }
 }

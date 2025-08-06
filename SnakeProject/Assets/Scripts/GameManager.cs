@@ -73,6 +73,30 @@ public class GameManager : MonoBehaviour
         }
         instantiatedFruit = null;
         keepPlaying = true;
+        if(PlayerPrefs.GetInt("activateCBR1") == 0) // Si el control CBR esta desactivado, activa el control humano
+        {
+            player1.GetComponent<CBRContrSnake>().setHumanControl(true);
+        }
+        else
+        {
+            if (PlayerPrefs.GetString("CBR1") != "") // Si se ha escrito una base de casos a buscar, cambiala
+            {
+                player1.GetComponent<CBRContrSnake>().changeBaseCase(PlayerPrefs.GetString("CBR1"));
+            }
+        }
+
+        if (PlayerPrefs.GetInt("activateCBR2") == 0) // Si el control CBR esta desactivado, activa el control humano
+        {
+            player2.GetComponent<CBRContrSnake>().setHumanControl(true);
+        }
+        else
+        {
+            if (PlayerPrefs.GetString("CBR2") != "") // Si se ha escrito una base de casos a buscar, cambiala
+            {
+                player2.GetComponent<CBRContrSnake>().changeBaseCase(PlayerPrefs.GetString("CBR2"));
+            }
+        }
+        PlayerPrefs.DeleteAll();
     }
 
     // Update is called once per frame
@@ -192,6 +216,10 @@ public class GameManager : MonoBehaviour
         player2.GetComponent<SnakeControl>().Awake();
         player1.GetComponent<SnakeControl>().Start();
         player2.GetComponent<SnakeControl>().Start();
+    }
+    public void returnToMenu()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene(0);
     }
 
     public bool getKeepPlaying()

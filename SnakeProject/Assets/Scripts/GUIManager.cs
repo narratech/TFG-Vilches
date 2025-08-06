@@ -13,6 +13,8 @@ public class GUIManager : MonoBehaviour
     private GameObject winnerText;
     [SerializeField]
     private GameObject retryButton;
+    [SerializeField]
+    private GameObject returnButton;
     // Start is called before the first frame update
     void Start()
     {
@@ -20,6 +22,7 @@ public class GUIManager : MonoBehaviour
         pointsPlayer2.GetComponent<TextMeshProUGUI>().SetText("0");
         winnerText.SetActive(false);
         retryButton.SetActive(false);
+        returnButton.SetActive(false);
     }
 
     // Update is called once per frame
@@ -51,10 +54,12 @@ public class GUIManager : MonoBehaviour
         }
         winnerText.SetActive(true);
         retryButton.SetActive(true);
+        returnButton.SetActive(true);
     }
     public void OnRetryReset()
     {
         winnerText.SetActive(false);
         retryButton.SetActive(false);
+        returnButton.SetActive(false);
     }
 }
