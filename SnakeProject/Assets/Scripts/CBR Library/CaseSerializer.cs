@@ -76,6 +76,10 @@ public class CaseSerializer
 
             return serVar;
         }
+        else if(tipo == typeof(DateTime))
+        {
+            return var.ToString();
+        }
         else
         {
             return null;
@@ -148,6 +152,10 @@ public class CaseSerializer
                         vector3s.Add(new Vector3(x, y, z));
                     }
                     return vector3s;
+                }
+            case "DateTime":
+                {
+                    return DateTime.Parse(var);
                 }
             default:
                 {

@@ -15224,6 +15224,7 @@ MonoBehaviour:
   pointsPlayer2: {fileID: 1511171583}
   winnerText: {fileID: 387818446}
   retryButton: {fileID: 98753547}
+  returnButton: {fileID: 1501070721}
 --- !u!1 &1634576682
 GameObject:
   m_ObjectHideFlags: 0

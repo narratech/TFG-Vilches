@@ -245,7 +245,6 @@ public class CBRBrain
     {
         if (type == ReviseType.custom)
         {
-            //ERROR: myFunc es null
             bool save = myFunc(caseToRevise,newCase, myFuncArgs);
             if(!save) possibleTwins.Clear(); // Si no lo vas a guardar, no te interesa saber si ya hay en la base de datos
             return save;

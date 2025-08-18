@@ -21,21 +21,17 @@ public class MenuGUIManager : MonoBehaviour
     public void togleCBRPlayer1(bool toggle)
     {
         CBRPlayer1 = toggle;
-        if(!CBRPlayer1) caseBase1.SetActive(true);
-        else caseBase1.SetActive(false);
     }
     public void togleCBRPlayer2(bool toggle)
     {
         CBRPlayer2 = toggle;
-        if (!CBRPlayer2) caseBase2.SetActive(true);
-        else caseBase2.SetActive(false);
     }
     public void play()
     {
         PlayerPrefs.SetInt("activateCBR1", CBRPlayer1? 0 : 1);
         PlayerPrefs.SetInt("activateCBR2", CBRPlayer2? 0 : 1);
-        if (CBRPlayer1) PlayerPrefs.SetString("CBR1",caseBase1.GetComponent<TMP_InputField>().text);
-        if (CBRPlayer2) PlayerPrefs.SetString("CBR2",caseBase2.GetComponent<TMP_InputField>().text);
+        PlayerPrefs.SetString("CBR1",caseBase1.GetComponent<TMP_InputField>().text);
+        PlayerPrefs.SetString("CBR2",caseBase2.GetComponent<TMP_InputField>().text);
         UnityEngine.SceneManagement.SceneManager.LoadScene(1);
     }
 }

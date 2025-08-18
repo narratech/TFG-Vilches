@@ -55,6 +55,30 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        startMap();
+        
+        if(PlayerPrefs.GetInt("activateCBR1") == 0) // Si el control CBR esta desactivado, activa el control humano
+        {
+            player1.GetComponent<CBRContrSnake>().setHumanControl(true);
+        }
+        
+        if (PlayerPrefs.GetString("CBR1") != "") // Si se ha escrito una base de casos a buscar, cambiala
+        {
+           player1.GetComponent<CBRContrSnake>().changeBaseCase(PlayerPrefs.GetString("CBR1"));
+        }
+
+        if (PlayerPrefs.GetInt("activateCBR2") == 0) // Si el control CBR esta desactivado, activa el control humano
+        {
+            player2.GetComponent<CBRContrSnake>().setHumanControl(true);
+        }
+        if (PlayerPrefs.GetString("CBR2") != "") // Si se ha escrito una base de casos a buscar, cambiala
+        {
+            player2.GetComponent<CBRContrSnake>().changeBaseCase(PlayerPrefs.GetString("CBR2"));
+        }
+        PlayerPrefs.DeleteAll();
+    }
+    void startMap()
+    {
         freeNodes = new List<Vector2>();
         myNodos = new NodeInfo[30, 19];
         for (int i = -17; i < 13; i++)
@@ -63,40 +87,16 @@ public class GameManager : MonoBehaviour
             {
                 int nodeX = 17 + i;
                 int nodeY = -9 - j;
-                myNodos[nodeX, nodeY] = new NodeInfo(false,false, new Vector3(i, 0, 18 + j));
-                if(i >=-16 && i <= 11 && j <= -10 && j >= -26)
+                myNodos[nodeX, nodeY] = new NodeInfo(false, false, new Vector3(i, 0, 18 + j));
+                if (i >= -16 && i <= 11 && j <= -10 && j >= -26)
                 {
                     freeNodes.Add(new Vector2(nodeX, nodeY));
                 }
-                
+
             }
         }
         instantiatedFruit = null;
         keepPlaying = true;
-        if(PlayerPrefs.GetInt("activateCBR1") == 0) // Si el control CBR esta desactivado, activa el control humano
-        {
-            player1.GetComponent<CBRContrSnake>().setHumanControl(true);
-        }
-        else
-        {
-            if (PlayerPrefs.GetString("CBR1") != "") // Si se ha escrito una base de casos a buscar, cambiala
-            {
-                player1.GetComponent<CBRContrSnake>().changeBaseCase(PlayerPrefs.GetString("CBR1"));
-            }
-        }
-
-        if (PlayerPrefs.GetInt("activateCBR2") == 0) // Si el control CBR esta desactivado, activa el control humano
-        {
-            player2.GetComponent<CBRContrSnake>().setHumanControl(true);
-        }
-        else
-        {
-            if (PlayerPrefs.GetString("CBR2") != "") // Si se ha escrito una base de casos a buscar, cambiala
-            {
-                player2.GetComponent<CBRContrSnake>().changeBaseCase(PlayerPrefs.GetString("CBR2"));
-            }
-        }
-        PlayerPrefs.DeleteAll();
     }
 
     // Update is called once per frame
@@ -211,7 +211,7 @@ public class GameManager : MonoBehaviour
         GuiManager.GetComponent<GUIManager>().OnRetryReset();
         GuiManager.GetComponent<GUIManager>().ChangeP1Points(player1Score);
         GuiManager.GetComponent<GUIManager>().ChangeP2Points(player2Score);
-        this.Start();
+        this.startMap();
         player1.GetComponent<SnakeControl>().Awake();
         player2.GetComponent<SnakeControl>().Awake();
         player1.GetComponent<SnakeControl>().Start();

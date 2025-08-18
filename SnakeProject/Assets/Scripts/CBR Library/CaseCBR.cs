@@ -6,9 +6,6 @@ using System.Reflection.Emit;
 using UnityEngine;
 public class CaseCBR
 {
-    private TypeBuilder typeBuilder;
-    dynamic myRealCase; // La instancia de la nueva clase
-
     Dictionary<string, dynamic> caseProperties;
     Dictionary<string, string> propertyTypes;
     dynamic answer = null;
@@ -24,6 +21,8 @@ public class CaseCBR
         propertyTypes["weight"] = "float";
         caseProperties["answer"] = null;
         propertyTypes["answer"] = null; // ERROR: Si no has hecho el setType previo
+        propertyTypes["timeStamp"] = "DateTime";
+        caseProperties["timeStamp"] = DateTime.Now;
     }
     /// <summary>
     /// Se encarga de comprobar si esa propiedad ya está creada, creandola si no, y asignandole un valor
