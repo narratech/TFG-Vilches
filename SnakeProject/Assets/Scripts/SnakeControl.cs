@@ -70,11 +70,15 @@ public class SnakeControl : MonoBehaviour
     }
     public virtual void Start() 
     {
+        init();
+    }
+    protected void init()
+    {
         bodyParts = new List<BodyPart>();
         headPart = new BodyPart(new Vector3(playerOne ? 1 : -1, 0, 0), headPartObj);
         tailPart = new BodyPart(new Vector3(playerOne ? 1 : -1, 0, 0), tailPartObj);
         bodyParts.Add(new BodyPart(new Vector3(playerOne ? 1 : -1, 0, 0), bodyPartObj));
-        myDirection = new Vector3(playerOne ? 1 : -1, 0, 0);       
+        myDirection = new Vector3(playerOne ? 1 : -1, 0, 0);
         snakePositions = new List<Vector2>();
         // La x total mide 26 nodos, empezando en -16 <-> 11 /-17 y 12 son limites
         // La y total mide 19 nodos empezando en 8 <-> -8 / 9 y -9 son limites
@@ -99,15 +103,14 @@ public class SnakeControl : MonoBehaviour
             X = 17 + Mathf.RoundToInt(bodyParts[i].parte.transform.position.x);
             Y = 9 - Mathf.RoundToInt(bodyParts[i].parte.transform.position.z);
             snakePositions.Add(new Vector2(X, Y));
-            
+
         }
         X = 17 + Mathf.RoundToInt(tailPart.parte.transform.position.x);
         Y = 9 - Mathf.RoundToInt(tailPart.parte.transform.position.z);
 
         snakePositions.Add(new Vector2(X, Y));
-        if(playerOne)GameManager.Instance.setPlayer1Positions(snakePositions);
+        if (playerOne) GameManager.Instance.setPlayer1Positions(snakePositions);
         else GameManager.Instance.setPlayer2Positions(snakePositions);
-
     }
 
     // Update is called once per frame
@@ -124,6 +127,8 @@ public class SnakeControl : MonoBehaviour
         headPart.parte.transform.SetPositionAndRotation(headStartPos,headStartRot);
         bodyParts[0].parte.transform.SetPositionAndRotation(bodyStartPos, bodyStartRot);
         tailPart.parte.transform.SetPositionAndRotation(tailStartPos, tailStartRot);
+        this.Awake();
+        init();
     }
     /// <summary>
     /// Utilidad para pasar de posiciones reales a nodo Y

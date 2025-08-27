@@ -212,13 +212,11 @@ public class GameManager : MonoBehaviour
         GuiManager.GetComponent<GUIManager>().ChangeP1Points(player1Score);
         GuiManager.GetComponent<GUIManager>().ChangeP2Points(player2Score);
         this.startMap();
-        player1.GetComponent<SnakeControl>().Awake();
-        player2.GetComponent<SnakeControl>().Awake();
-        player1.GetComponent<SnakeControl>().Start();
-        player2.GetComponent<SnakeControl>().Start();
     }
     public void returnToMenu()
     {
+        player1.GetComponent<SnakeControl>().onResetTry();
+        player2.GetComponent<SnakeControl>().onResetTry();
         UnityEngine.SceneManagement.SceneManager.LoadScene(0);
     }
 

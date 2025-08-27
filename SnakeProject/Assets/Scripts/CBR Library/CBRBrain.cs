@@ -74,10 +74,7 @@ public class CBRBrain
         this.reuseAnswer = reuseType;
         this.normalizedWeights = false;
     }
-    ~CBRBrain()
-    {
-        persistCases();
-    }
+
     #region public
     /// <summary>
     /// Añade un valor al peso de una caracteristica y se normaliza
@@ -339,8 +336,12 @@ public class CBRBrain
     }
     public void persistCases()
     {
+        if (caseToSave.Count > 0)
+        {
+            readedCases.AddRange(caseToSave);
+            caseToSave.Clear();
+        }
         if (readedCases.Count > 0) caseSerializer.writeCases(CSVname, readedCases, true);
-        if(caseToSave.Count > 0)caseSerializer.writeCases(CSVname, caseToSave);
     }
     #endregion
 }

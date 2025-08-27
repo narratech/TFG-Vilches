@@ -37,7 +37,7 @@ public class CBRContrSnake : SnakeControl
         {
             base.Update();
             if (Input.GetKeyDown(KeyCode.G)) myBrain.persistCases();
-            if(Input.GetKeyDown(KeyCode.M)) humanControl = !humanControl;
+            if(Input.GetKeyDown(KeyCode.M)) humanControl = !humanControl; //Cambiar con player?
             if(humanControl) HandleHumanInput();
             if (elapsedTime > 1 / speed)
             {
