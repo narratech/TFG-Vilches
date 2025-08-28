@@ -248,8 +248,6 @@ public class CBRBrain
         }
         else return true;
     }
-    //TODO: Revisar si dos casos son muy iguales (estoy guardando los posibles gemelos en una variable de la clase que
-    // se vacia en cada caso y que se rellena en el retrieve knn
     /// <summary>
     /// Añade el caso a la lista de casos por guardar y también a la base de datos para usar
     /// BASE: GUARDA AL FINAL
