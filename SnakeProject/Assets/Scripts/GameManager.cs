@@ -187,12 +187,7 @@ public class GameManager : MonoBehaviour
     }
     public bool isThereSnake(int nodeX, int nodeY, bool playerOne)
     {
-        if(myNodos[nodeX, nodeY].snakePartPresent)
-        {
-            if ((myNodos[nodeX, nodeY].wichSnake == NodeInfo.snakePresent.player1 && !playerOne) ||
-                (myNodos[nodeX, nodeY].wichSnake == NodeInfo.snakePresent.player2 && playerOne)) return true;
-            else return false;
-        }
+        if (myNodos[nodeX, nodeY].snakePartPresent) return true;
         else return false;
     }
 

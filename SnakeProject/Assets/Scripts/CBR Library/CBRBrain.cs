@@ -225,7 +225,7 @@ public class CBRBrain
                 IEnumerator iterator = knnCases.GetEnumerator();
                 iterator.MoveNext(); // El elemento más prometedor 
                 query.setAnswer(((CaseWithSimilarity)iterator.Current).myCase.getAnswer());
-                return ((CaseWithSimilarity)iterator.Current).myCase.getAnswer(); // Supongo que, al ser en tiempo de ejecucion, esto se resolvera solo
+                return ((CaseWithSimilarity)iterator.Current).myCase.getAnswer();
             }
         }
         else return null;
@@ -300,7 +300,7 @@ public class CBRBrain
         }
         SortedSet<CaseWithSimilarity> caseSimil = retrieveKNNCases(query, minFitness);
         dynamic res = reuseCases(caseSimil, ref query,reuseAnswer);
-        Debug.Log(res);
+        
         if (res == null) 
         {
             res = myFunc(args);

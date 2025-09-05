@@ -204,7 +204,6 @@ public class CaseSerializer
                     readedCases.Add(serializeCSVToCase(variablesTypes, values));
                 }
                 myReader.Close();
-                Debug.Log("Reader Closed");
             }
         }
         casesCount = readedCases.Count;
@@ -241,7 +240,6 @@ public class CaseSerializer
 
             myWriter.Close();
         }
-        Debug.Log("Writer Closed");
     }
     /// <summary>
     /// Es un método para la lectura de casos por defecto. Genera casos leidos desde csv. 
