@@ -1,0 +1,294 @@
+using System.Collections.Generic;
+using Unity.VisualScripting;
+using UnityEngine;
+
+public class SnakeControl : MonoBehaviour
+{
+    protected enum Dir
+    {
+        LEFT, RIGHT, UP, DOWN
+    }
+    protected struct Nodo
+    {
+        public Vector3 centro;
+        public Vector3 direccion;
+        public Nodo(Vector3 cent, Vector3 dir)
+        {
+            centro = cent;
+            direccion = dir;
+        }
+    }
+    protected struct BodyPart
+    {
+        public Vector3 direccion;
+        public GameObject parte;
+        public BodyPart(Vector3 dir, GameObject part)
+        {
+            parte = part;
+            direccion = dir;
+        }
+    }
+    protected Nodo[,] myNodos;
+    protected List<BodyPart> bodyParts;
+    protected BodyPart headPart;
+    protected BodyPart tailPart;
+
+    protected float elapsedTime;
+    protected bool growthNeeded;
+    protected Vector2 headNode;
+
+    [SerializeField]
+    protected Vector3 myDirection;
+    [SerializeField]
+    protected bool playerOne;
+    [SerializeField]
+    protected GameObject headPartObj;
+    [SerializeField]
+    protected GameObject bodyPartObj;
+    [SerializeField]
+    protected GameObject tailPartObj;
+    [SerializeField]
+    protected float speed;
+    protected List<Vector2> snakePositions;
+
+    protected Vector3 headStartPos;
+    protected Quaternion headStartRot;
+    protected Vector3 bodyStartPos;
+    protected Quaternion bodyStartRot;
+    protected Vector3 tailStartPos;
+    protected Quaternion tailStartRot;
+    protected float numberOfParts;
+
+    // Start is called before the first frame update
+    public void Awake()
+    {
+        headStartPos = headPartObj.transform.position;
+        headStartRot = headPartObj.transform.rotation;
+        bodyStartPos = bodyPartObj.transform.position;
+        bodyStartRot = bodyPartObj.transform.rotation;
+        tailStartPos = tailPartObj.transform.position;
+        tailStartRot = tailPartObj.transform.rotation;
+    }
+    public virtual void Start() 
+    {
+        init();
+    }
+    protected void init()
+    {
+        bodyParts = new List<BodyPart>();
+        headPart = new BodyPart(new Vector3(playerOne ? 1 : -1, 0, 0), headPartObj);
+        tailPart = new BodyPart(new Vector3(playerOne ? 1 : -1, 0, 0), tailPartObj);
+        bodyParts.Add(new BodyPart(new Vector3(playerOne ? 1 : -1, 0, 0), bodyPartObj));
+        myDirection = new Vector3(playerOne ? 1 : -1, 0, 0);
+        snakePositions = new List<Vector2>();
+        // La x total mide 26 nodos, empezando en -16 <-> 11 /-17 y 12 son limites
+        // La y total mide 19 nodos empezando en 8 <-> -8 / 9 y -9 son limites
+        myNodos = new Nodo[30, 19];
+        for (int i = -17; i < 13; i++)
+        {
+            for (int j = -9; j > -28; j--)
+            {
+                int nodeX = 17 + i;
+                int nodeY = -9 - j;
+                myNodos[nodeX, nodeY] = new Nodo(new Vector3(i, 0, 18 + j), new Vector3(0, 0, 0));
+            }
+        }
+        growthNeeded = false;
+
+        int X = 17 + Mathf.RoundToInt(headPart.parte.transform.position.x); // Para que no se cambie la direccion hasta haber alcanzado el nodo
+        int Y = 9 - Mathf.RoundToInt(headPart.parte.transform.position.z);
+
+        snakePositions.Add(new Vector2(X, Y));
+        for (int i = 0; i < bodyParts.Count; i++)
+        {
+            X = 17 + Mathf.RoundToInt(bodyParts[i].parte.transform.position.x);
+            Y = 9 - Mathf.RoundToInt(bodyParts[i].parte.transform.position.z);
+            snakePositions.Add(new Vector2(X, Y));
+
+        }
+        X = 17 + Mathf.RoundToInt(tailPart.parte.transform.position.x);
+        Y = 9 - Mathf.RoundToInt(tailPart.parte.transform.position.z);
+
+        snakePositions.Add(new Vector2(X, Y));
+        if (playerOne) GameManager.Instance.setPlayer1Positions(snakePositions);
+        else GameManager.Instance.setPlayer2Positions(snakePositions);
+        numberOfParts = 3;
+    }
+
+    // Update is called once per frame
+    protected virtual void Update()
+    {
+        elapsedTime += Time.deltaTime;
+    }
+    public virtual void onResetTry()
+    {
+        for (int i = 1; i < bodyParts.Count; i++)
+        {
+            Destroy(bodyParts[i].parte);
+        }
+        headPart.parte.transform.SetPositionAndRotation(headStartPos,headStartRot);
+        bodyParts[0].parte.transform.SetPositionAndRotation(bodyStartPos, bodyStartRot);
+        tailPart.parte.transform.SetPositionAndRotation(tailStartPos, tailStartRot);
+        this.Awake();
+        init();
+    }
+    /// <summary>
+    /// Utilidad para pasar de posiciones reales a nodo Y
+    /// </summary>
+    /// <param name="zPos"> Posición de z sacada de un transform</param>
+    /// <returns>Nodo Y en el que se está</returns>
+    protected int posToYNode(float zPos)
+    {
+        return -4 - Mathf.RoundToInt(zPos); // La y total mide 8 nodos empezando en 4
+    }
+    /// <summary>
+    /// Utilidad para pasar de posiciones reales a nodo X
+    /// </summary>
+    /// <param name="xPos"> Posición de x sacada de un transform</param>
+    /// <returns>Nodo X en el que se está</returns>
+    protected int posToXNode(float xPos)
+    {
+        return 10 + Mathf.RoundToInt(xPos); // La y total mide 8 nodos empezando en 4
+    }
+
+    /// <summary>
+    /// Se encarga de mover cada parte del cuerpo de la serpiente segun pasa por los nodos y, si necesita cambiar la direccion,
+    /// la cambia
+    /// </summary>
+    protected void Move()
+    {
+        List<Vector2> previousSnakePositions = new List<Vector2>(snakePositions);
+        snakePositions.Clear();
+        int nodeX = 17 + Mathf.RoundToInt(headPart.parte.transform.position.x); // Para que no se cambie la direccion hasta haber alcanzado el nodo
+        int nodeY = 9 - Mathf.RoundToInt(headPart.parte.transform.position.z);
+        // Te mueves en la direccion que diga ese nodo si es diferente a tu dirección
+        if (myNodos[nodeX, nodeY].direccion != new Vector3(0, 0, 0) && myNodos[nodeX, nodeY].direccion != headPart.direccion)
+        {
+            headPart.direccion = myNodos[nodeX, nodeY].direccion;
+            myDirection = headPart.direccion;
+            headPart.parte.transform.rotation = Quaternion.LookRotation(myDirection);
+            
+        }
+        // Movimiento discreto mejor, por nodos, no continuo con delta.
+        headPart.parte.transform.position = myNodos[nodeX + Mathf.RoundToInt(headPart.direccion.x), nodeY - Mathf.RoundToInt(headPart.direccion.z)].centro;
+        nodeX = 17 + Mathf.RoundToInt(headPart.parte.transform.position.x);
+        nodeY = 9 - Mathf.RoundToInt(headPart.parte.transform.position.z);
+        snakePositions.Add(new Vector2(nodeX, nodeY));
+        headNode = new Vector2(nodeX,nodeY);
+
+        bool eatedOwnBody = false;
+        int j = 1;
+        while(!eatedOwnBody && j < previousSnakePositions.Count)
+        {
+            if (previousSnakePositions[j] == headNode) eatedOwnBody = true;
+            else j++;
+        }
+        if (eatedOwnBody || (headNode.x <= 0 || headNode.x >= 29 ||
+        headNode.y <= 0 || headNode.y >= 18) || GameManager.Instance.isThereSnake((int)headNode.x, (int)headNode.y)) // Si has perdido
+        {
+            GameManager.Instance.lostGame(playerOne);
+            return;
+        }
+
+            nodeX = 17 + Mathf.RoundToInt(headPart.parte.transform.position.x); // Para comprobar si hay fruta o serpiente
+            nodeY = 9 - Mathf.RoundToInt(headPart.parte.transform.position.z);
+            // Te comes la fruta
+            if (GameManager.Instance.isThereFruit(nodeX, nodeY))
+            {
+                growthNeeded = true;
+                GameManager.Instance.eatFruit(nodeX, nodeY);
+                if (playerOne) GameManager.Instance.addPlayer1Score(100);
+                else GameManager.Instance.addPlayer2Score(100);
+            }
+
+            for (int i = 0; i < bodyParts.Count; i++)
+            {
+                nodeX = 17 + Mathf.RoundToInt(bodyParts[i].parte.transform.position.x);
+                nodeY = 9 - Mathf.RoundToInt(bodyParts[i].parte.transform.position.z);
+                BodyPart myPart = bodyParts[i];
+
+                if (myNodos[nodeX, nodeY].direccion != new Vector3(0, 0, 0) && myNodos[nodeX, nodeY].direccion != myPart.direccion)
+                {
+
+                    myPart.parte.transform.rotation = Quaternion.LookRotation(myNodos[nodeX, nodeY].direccion);
+
+
+                    myPart.direccion = myNodos[nodeX, nodeY].direccion; // Se guarda la direccion a seguir
+
+
+                }
+                myPart.parte.transform.position = myNodos[nodeX + Mathf.RoundToInt(myPart.direccion.x), nodeY - Mathf.RoundToInt(myPart.direccion.z)].centro;
+                bodyParts[i] = myPart;
+            nodeX = 17 + Mathf.RoundToInt(myPart.parte.transform.position.x);
+            nodeY = 9 - Mathf.RoundToInt(myPart.parte.transform.position.z);
+            snakePositions.Add(new Vector2(nodeX, nodeY));
+        }
+            nodeX = 17 + Mathf.RoundToInt(tailPart.parte.transform.position.x);
+            nodeY = 9 - Mathf.RoundToInt(tailPart.parte.transform.position.z);
+            // Para que no gire sin parar en el mismo nodo
+            if (!growthNeeded)
+            {
+                if (myNodos[nodeX, nodeY].direccion != new Vector3(0, 0, 0) && myNodos[nodeX, nodeY].direccion != tailPart.direccion)
+                {
+                    // Falta rotar las cosas
+
+                    tailPart.direccion = myNodos[nodeX, nodeY].direccion; // La cola tiene la direccion
+                    tailPart.parte.transform.rotation = Quaternion.LookRotation(myNodos[nodeX, nodeY].direccion);
+
+                    myNodos[nodeX, nodeY].direccion = new Vector3(0, 0, 0); // Si pasa la cola, se reinicia el nodo para otro giro
+                }
+
+                tailPart.parte.transform.position = myNodos[nodeX + Mathf.RoundToInt(tailPart.direccion.x), nodeY - Mathf.RoundToInt(tailPart.direccion.z)].centro;
+                nodeX = 17 + Mathf.RoundToInt(tailPart.parte.transform.position.x);
+                nodeY = 9 - Mathf.RoundToInt(tailPart.parte.transform.position.z);
+                snakePositions.Add(new Vector2(nodeX, nodeY));
+
+
+            }
+            else growSomething();
+        GameManager.Instance.deOccupieNode(previousSnakePositions);
+        GameManager.Instance.occupieNode(snakePositions, playerOne);
+
+    }
+
+    protected void growSomething()
+    {
+        int previusNodeX = 17 + Mathf.RoundToInt(bodyParts[bodyParts.Count - 1].parte.transform.position.x -
+           Mathf.RoundToInt(bodyParts[bodyParts.Count - 1].direccion.x));
+        int previusNodeY = 9 - Mathf.RoundToInt(bodyParts[bodyParts.Count - 1].parte.transform.position.z -
+           Mathf.RoundToInt(bodyParts[bodyParts.Count - 1].direccion.z));
+        GameObject newBodyPart = Instantiate(bodyPartObj, myNodos[previusNodeX, previusNodeY].centro, bodyParts[bodyParts.Count - 1].parte.transform.rotation);
+        Vector3 dir = bodyParts[bodyParts.Count - 1].direccion;
+        bodyParts.Add(new BodyPart(dir, newBodyPart));
+        growthNeeded = false;
+        numberOfParts++;
+    }
+
+    protected void turn(Dir direction)
+    {
+        int nodeX = 17 + Mathf.RoundToInt(headPart.parte.transform.position.x);
+        int nodeY = 9 - Mathf.RoundToInt(headPart.parte.transform.position.z);
+        //Marcas el siguiente nodo de tu direccion para giro
+        Vector3 newDirect;
+        switch(direction)
+        {
+            case Dir.LEFT:
+                newDirect = new Vector3(-1, 0, 0);
+                break;
+            case Dir.RIGHT:
+                newDirect = new Vector3(1, 0, 0);
+                break;
+            case Dir.UP:
+                newDirect = new Vector3(0, 0, 1);
+                break;
+            case Dir.DOWN:
+                newDirect = new Vector3(0, 0, -1);
+                break;
+            default:
+                newDirect = new Vector3(0, 0, 0);
+                break;
+        }
+        newDirect = newDirect.normalized;
+        myNodos[nodeX, nodeY].direccion = newDirect;
+    }
+}
