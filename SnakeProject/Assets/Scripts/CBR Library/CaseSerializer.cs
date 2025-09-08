@@ -274,6 +274,10 @@ public class CaseSerializer
         List<string> variableNames = myCase.getVariableNames();
         for (int i = 0; i < variableNames.Count; i++)
         {
+            if (variableNames[i]==null)
+            {
+                Debug.Log("Que está pasando");
+            }
             string name = variableNames[i].Split(":")[0];
             string type = variableNames[i].Split(":")[1];
             myCaseParsed += serializeVariable(myCase.getProperty(name));

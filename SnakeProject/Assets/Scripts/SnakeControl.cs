@@ -57,6 +57,7 @@ public class SnakeControl : MonoBehaviour
     protected Quaternion bodyStartRot;
     protected Vector3 tailStartPos;
     protected Quaternion tailStartRot;
+    protected float numberOfParts;
 
     // Start is called before the first frame update
     public void Awake()
@@ -111,6 +112,7 @@ public class SnakeControl : MonoBehaviour
         snakePositions.Add(new Vector2(X, Y));
         if (playerOne) GameManager.Instance.setPlayer1Positions(snakePositions);
         else GameManager.Instance.setPlayer2Positions(snakePositions);
+        numberOfParts = 3;
     }
 
     // Update is called once per frame
@@ -182,7 +184,7 @@ public class SnakeControl : MonoBehaviour
             else j++;
         }
         if (eatedOwnBody || (headNode.x <= 0 || headNode.x >= 29 ||
-        headNode.y <= 0 || headNode.y >= 18) || GameManager.Instance.isThereSnake((int)headNode.x, (int)headNode.y, playerOne)) // Si has perdido
+        headNode.y <= 0 || headNode.y >= 18) || GameManager.Instance.isThereSnake((int)headNode.x, (int)headNode.y)) // Si has perdido
         {
             GameManager.Instance.lostGame(playerOne);
             return;
@@ -259,6 +261,7 @@ public class SnakeControl : MonoBehaviour
         Vector3 dir = bodyParts[bodyParts.Count - 1].direccion;
         bodyParts.Add(new BodyPart(dir, newBodyPart));
         growthNeeded = false;
+        numberOfParts++;
     }
 
     protected void turn(Dir direction)
@@ -287,15 +290,5 @@ public class SnakeControl : MonoBehaviour
         }
         newDirect = newDirect.normalized;
         myNodos[nodeX, nodeY].direccion = newDirect;
-    }
-    protected List<float> getWallsDistance()
-    {
-        List<float> distance = new List<float>();
-
-        distance.Add(headNode.x); // Distancia a la pared izquierda
-        distance.Add(headNode.y); // Distancia a la pared inferior
-        distance.Add(29 - headNode.x); // Distancia a la pared derecha
-        distance.Add(18- headNode.y); // Distancia a la pared superior
-        return distance;
     }
 }

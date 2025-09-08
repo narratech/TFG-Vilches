@@ -185,7 +185,7 @@ public class GameManager : MonoBehaviour
         instantiatedFruit = null;
         // No ponemos en nodosFree porque habra serpiente que se haya comido la fruta
     }
-    public bool isThereSnake(int nodeX, int nodeY, bool playerOne)
+    public bool isThereSnake(int nodeX, int nodeY)
     {
         if (myNodos[nodeX, nodeY].snakePartPresent) return true;
         else return false;

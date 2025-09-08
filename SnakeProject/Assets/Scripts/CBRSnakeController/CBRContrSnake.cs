@@ -7,7 +7,7 @@ using UnityEngine.SocialPlatforms.Impl;
 
 public enum Direction
 {
-    LEFT,RIGHT, UP, DOWN
+    LEFT,RIGHT, UP, DOWN, NULL
 }
 
 
@@ -152,40 +152,41 @@ public class CBRContrSnake : SnakeControl
 
     CaseCBR formACase()
     {
-        // IDEA: DEJAR SOLO LA DIRECCION, LA POS DE LA CABEZA, LA POS DE LA FRUTA, LA POS DE LOS NODOS ACTUALES Y DEL RIVAL
         CaseCBR query = new CaseCBR();
         query.setAnswerType("direction");
+
+        // Posición de la cabeza
         query.setProperty("position:vector2", headNode);
         myBrain.setWeigth("position", 0.2f);
+
+        // Dirección de la cabeza
         query.setProperty("headDirection:vector3",this.myDirection);
         myBrain.setWeigth("headDirection", 0.2f);
-        query.setProperty("DistanceToWalls:floatList",this.getWallsDistance());
-        myBrain.setWeigth("DistanceToWalls", 0.05f);
+
         query.setProperty("Score:float", 10); // Esto luego se modifica si juega la cbr y lo deja como buen movimiento si lo ha puesto un humano
         if(playerOne)
-        {
-            List<Vector2>myList = new List<Vector2>(GameManager.Instance.getPlayer1Positions());
-            query.setProperty("myPartsNodes:vector2List", myList);
-            List<Vector2>myList2 = new List<Vector2>(GameManager.Instance.getPlayer2Positions());
-            query.setProperty("otherSnakePartsNode:vector2List", myList2);
+        {   
             query.setProperty("levelScore:float", GameManager.Instance.getPlayer1Score());
         }
         else
         {
-            List<Vector2> myList = new List<Vector2>(GameManager.Instance.getPlayer2Positions());
-            query.setProperty("myPartsNodes:vector2List", myList);
-            List<Vector2> myList2 = new List<Vector2>(GameManager.Instance.getPlayer1Positions());
-            query.setProperty("otherSnakePartsNode:vector2List", myList2);
             query.setProperty("levelScore:float", GameManager.Instance.getPlayer2Score());
         }
-        
-        myBrain.setWeigth("myPartsNodes", 0.1f);
-        myBrain.setWeigth("otherSnakePartsNode", 0.05f);
-        query.setProperty("fruitPos:vector2", GameManager.Instance.getFruitNode());
-        myBrain.setWeigth("fruitPos", 0.2f);
-        query.setProperty("inTrackToCollide:bool", inTrackToCollision());
-        myBrain.setWeigth("inTrackToCollide", 0.25f);
 
+        query.setProperty("numberOfParts:float", numberOfParts);
+
+        // Posicion relativa de la fruta
+        query.setProperty("fruitRelPos:directionList", fruitRelativePos());
+        myBrain.setWeigth("fruitRelPos", 0.25f);
+
+        // Distancia manhattan a la fruta
+        query.setProperty("fruitDis:float", (Math.Abs(GameManager.Instance.getFruitNode().x - headNode.x) +
+            Math.Abs(GameManager.Instance.getFruitNode().y - headNode.y)));
+        myBrain.setWeigth("fruitDis", 0.1f);
+
+        // Colisiones inmediatas
+        query.setProperty("checkCollisions:boolList", checkCollisions());
+        myBrain.setWeigth("checkCollisions", 0.25f);
         return query;
 
     }
@@ -216,20 +217,11 @@ public class CBRContrSnake : SnakeControl
 
         if (query.getProperty("levelScore") > futureQuery.getProperty("levelScore")) // Se ha reiniciado el nivel
             score -= 100; 
-        if (query.getProperty("myPartsNodes").Count < futureQuery.getProperty("myPartsNodes").Count) // Se ha comido fruta
+        if (query.getProperty("numberOfParts") < futureQuery.getProperty("numberOfParts")) // Se ha comido fruta
             score += 5;
-        if (query.getProperty("inTrackToCollide")) //Mirar la distancia hacia la pared que esta mirando(Escalar recompensa con dsitancia
-        { if (!futureQuery.getProperty("inTrackToCollide"))
-                score += 3;
-        }
-        if (!query.getProperty("inTrackToCollide")) //Mirar la distancia hacia la pared que esta mirando(Escalar recompensa con dsitancia
-        {
-            if (futureQuery.getProperty("inTrackToCollide"))
-                score -= 2;
-        }
 
-        float distanceBefore = (Math.Abs(query.getProperty("position").x - query.getProperty("fruitPos").x) + Math.Abs(query.getProperty("position").y - query.getProperty("fruitPos").y));
-        float distanceAfter = (Math.Abs(futureQuery.getProperty("position").x - futureQuery.getProperty("fruitPos").x) + Math.Abs(futureQuery.getProperty("position").y - futureQuery.getProperty("fruitPos").y));
+        float distanceBefore = query.getProperty("fruitDis");
+        float distanceAfter = futureQuery.getProperty("fruitDis");
 
         if (distanceAfter < distanceBefore)
             score += 2;
@@ -237,22 +229,51 @@ public class CBRContrSnake : SnakeControl
             score -= 1;
         return score;
     }
-
-    bool inTrackToCollision()
+    /// <summary>
+    /// Checkea si la serpiente puede colisionar en sus 4 direcciones
+    /// </summary>
+    /// <returns>Lista de booleanos con choques derecha,izda,abajo y arriba en ese orden</returns>
+    List<bool> checkCollisions()
     {
-        bool inTrackToCollision = false;
-        if(this.myDirection.x != 0)
-        {
-            if ((this.headNode.x + this.myDirection.x) >= 29 || (this.headNode.x + this.myDirection.x) <= 0) inTrackToCollision = true;
-            else if (GameManager.Instance.isThereSnake((int)(this.headNode.x + (this.myDirection.x)), (int)this.headNode.y, this.playerOne)) inTrackToCollision = true;
-            
-        }
-        else
-        {
-            if ((this.headNode.y - this.myDirection.z) >= 18 || (this.headNode.y - this.myDirection.z) <= 0) inTrackToCollision = true;
-            else if (GameManager.Instance.isThereSnake((int)this.headNode.x, (int)(this.headNode.y - (this.myDirection.z)), this.playerOne)) inTrackToCollision = true;
-        }
-        return inTrackToCollision;
+        List<bool> result = new List<bool>();
+        // Derecha
+        if ((this.headNode.x + 1) >= 29 || 
+            (GameManager.Instance.isThereSnake((int)(this.headNode.x + 1), (int)this.headNode.y))) result.Add(true);
+        else result.Add(false);
+        // Izquierda
+        if ((this.headNode.x - 1) <= 0 ||
+            (GameManager.Instance.isThereSnake((int)(this.headNode.x - 1), (int)this.headNode.y))) result.Add(true);
+        else result.Add(false);
+        // Abajo
+        if ((this.headNode.y + 1) >= 18 ||
+            (GameManager.Instance.isThereSnake((int)(this.headNode.x), (int)this.headNode.y + 1))) result.Add(true);
+        else result.Add(false);
+        // Arriba
+        if ((this.headNode.y - 1) <= 0 ||
+            (GameManager.Instance.isThereSnake((int)(this.headNode.x), (int)this.headNode.y - 1))) result.Add(true);
+        else result.Add(false);
+
+        return result;
+    }
+
+    List<Direction> fruitRelativePos()
+    {
+        List<Direction> result = new List<Direction>();
+        // Fruta a la derecha
+        if (this.headNode.x < GameManager.Instance.getFruitNode().x) result.Add(Direction.RIGHT);
+        // Fruta a la izquierda
+        else if(this.headNode.x > GameManager.Instance.getFruitNode().x) result.Add(Direction.LEFT);
+        // Fruta en el mismo X
+        else result.Add(Direction.NULL);
+
+        // Fruta abajo
+        if (this.headNode.y < GameManager.Instance.getFruitNode().y) result.Add(Direction.DOWN);
+        // Fruta arriba
+        else if (this.headNode.y > GameManager.Instance.getFruitNode().y) result.Add(Direction.UP);
+        // Fruta en el mismo X
+        else result.Add(Direction.NULL);
+
+        return result;
     }
 
     public void setHumanControl(bool humanContr)

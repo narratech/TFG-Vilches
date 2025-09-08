@@ -11,18 +11,18 @@ class myComparer : ICaseComparer
         float similarity = 0;
         similarity += CaseUtility.computeV2ManhattanSimilarity(query.getProperty("position"),
            caseToLook.getProperty("position"), maxDistance) * weigths["position"];
-        similarity += CaseUtility.computeV2ManhattanSimilarity(query.getProperty("fruitPos"),
-           caseToLook.getProperty("fruitPos"), maxDistance) * weigths["fruitPos"];
-        similarity += CaseUtility.computeV3ManhattanSimilarity(query.getProperty("headDirection"),
-           caseToLook.getProperty("headDirection"), maxDistance) * weigths["headDirection"];
-        similarity += CaseUtility.computeV2ListManhattanSimilarity(query.getProperty("myPartsNodes"),
-           caseToLook.getProperty("myPartsNodes"), maxDistance) * weigths["myPartsNodes"];
-        similarity += CaseUtility.computeV2ListManhattanSimilarity(query.getProperty("otherSnakePartsNode"),
-          caseToLook.getProperty("otherSnakePartsNode"), maxDistance) * weigths["otherSnakePartsNode"];
-        similarity += CaseUtility.computeFloatListSimilarity(query.getProperty("DistanceToWalls"), caseToLook.getProperty("DistanceToWalls"), maxDistance)
-            * weigths["DistanceToWalls"];
-        similarity += CaseUtility.computeBoolSimilarity(query.getProperty("inTrackToCollide"), caseToLook.getProperty("inTrackToCollide"))
-            * weigths["inTrackToCollide"];
+        similarity += CaseUtility.computeFloatSimilarity(query.getProperty("fruitDis"),
+           caseToLook.getProperty("fruitDis"), maxDistance) * weigths["fruitDis"];
+        similarity += (Vector3.Equals(query.getProperty("headDirection"),
+            caseToLook.getProperty("headDirection"))? 1 * weigths["headDirection"] : 0 );
+        similarity += CaseUtility.computeBoolListSimilarity(query.getProperty("checkCollisions"),
+            caseToLook.getProperty("checkCollisions")) * weigths["checkCollisions"];
+        int totalSimRelPos = 0;
+        for(int i=0; i < query.getProperty("fruitRelPos").Count;i++)
+        {
+            totalSimRelPos += query.getProperty("fruitRelPos")[i] == caseToLook.getProperty("fruitRelPos")[i] ? 1 : 0;
+        }
+        similarity += (totalSimRelPos / query.getProperty("fruitRelPos").Count) * weigths["fruitRelPos"];
 
         return new CaseWithSimilarity(caseToLook, similarity);
     }

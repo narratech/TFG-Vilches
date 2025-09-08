@@ -61,9 +61,9 @@ public class CaseUtility
         int lessItems = Math.Min(caseToLook.Count, query.Count);
         for (int i = 0; i < lessItems; i++)
         {
-            disparity += (1 - (query[i] == caseToLook[i] ? 1 : 0)) /mostItems;
+            disparity += (query[i] == caseToLook[i] ? 0 : 1);
         }
-        return 1-disparity;
+        return 1-(disparity/mostItems);
     }
     /// <summary>
     /// Se encarga de devolver, siendo 0 nada parecidos y 1 iguales, como de similares son las dos variables
