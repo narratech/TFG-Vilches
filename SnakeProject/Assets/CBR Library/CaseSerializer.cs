@@ -189,7 +189,7 @@ public class CaseSerializer
     /// <param name="readedCases">Lista de casos en los que guardar los leidos</param>
     public virtual void readCases(string csvName, ref List<CaseCBR> readedCases)
     {
-        string filePath = "CaseBase/" + csvName + ".csv";
+        string filePath = Application.persistentDataPath + "/CaseBase/" + csvName + ".csv";
 
         if (File.Exists(filePath)) // Si existe una base de casos, leelos
         {
@@ -217,11 +217,11 @@ public class CaseSerializer
     /// <param name="ignoreExisting">Ignora si existia antes una base de casos</param>
     public virtual void writeCases(string CSVname, List<CaseCBR>caseToSave, bool ignoreExisting = false)
     {
-        string filePath = "CaseBase/" + CSVname + ".csv";
+        string filePath = Application.persistentDataPath + "/CaseBase/" + CSVname + ".csv";
 
         bool existedBefore = true;
         int id = 0;
-        if (!Directory.Exists("CaseBase")) Directory.CreateDirectory("CaseBase");
+        if (!Directory.Exists(Application.persistentDataPath + "/CaseBase")) Directory.CreateDirectory(Application.persistentDataPath + "/CaseBase");
         if (!File.Exists(filePath) || ignoreExisting) existedBefore = false;
         else if(existedBefore) id = casesCount; //Las id de los nuevos casos que no estan escritos
 
